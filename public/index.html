@@ -10,12 +10,25 @@
     <div class="container">
       <h1>Local Music Tool</h1>
 
+      <section class="chooser">
+        <button id="btnThemes" class="modeBtn">Themes</button>
+        <button id="btnEffects" class="modeBtn">Effects</button>
+      </section>
+
       <section class="player">
-        <audio id="player" controls preload="metadata"></audio>
+        <div class="playerRow">
+          <audio id="player" preload="metadata"></audio>
+          <div class="controls">
+            <button id="playPause">Play</button>
+            <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.01" value="1"></label>
+          </div>
+        </div>
+        <div id="nowPlaying" class="nowPlaying"></div>
       </section>
 
       <section class="tracks">
-        <h2>Tracks</h2>
+        <h2 id="tracksTitle">Tracks</h2>
+        <button id="back" class="linkBtn" style="display:none">← Back</button>
         <ul id="trackList"></ul>
       </section>
     </div>
