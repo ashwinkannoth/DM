@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Dungeon Master Effects Tool</title>
+    <title>Dungeon Master Assistant</title>
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
@@ -73,29 +73,32 @@
 
         <aside class="dice-panel">
           <div class="dice-header">
-            <h2>3D Dice Roller</h2>
-            <p>Roll every polyhedral die in stunning 3D. Place GLB dice models into the `dice/` folder and watch them tumble.</p>
+            <h2>Dice Roller</h2>
+            <p>Tap a die to spin up a quick roll. Results appear instantly, with a spark line shimmer as it “rolls”.</p>
           </div>
-          <div class="dice-canvas-wrapper">
-            <canvas id="diceCanvas"></canvas>
-            <div id="diceOverlay" class="dice-overlay" aria-live="polite">waiting for your roll...</div>
-          </div>
-          <div class="dice-controls">
-            <div class="dice-buttons">
-              <button type="button" data-die="d4">Roll D4</button>
-              <button type="button" data-die="d6">Roll D6</button>
-              <button type="button" data-die="d8">Roll D8</button>
-              <button type="button" data-die="d10">Roll D10</button>
-              <button type="button" data-die="d12">Roll D12</button>
-              <button type="button" data-die="d20">Roll D20</button>
+          <div class="dice-roller-card">
+            <div class="dice-roll-visual" id="diceVisual">
+              <div class="dice-spark" id="diceSpark"></div>
+              <div class="dice-visual-value" id="diceVisualValue">—</div>
             </div>
-            <div id="diceResult" class="dice-result">Result: —</div>
+            <div class="dice-controls">
+              <div class="dice-buttons">
+                <button type="button" data-die="d4">Roll D4</button>
+                <button type="button" data-die="d6">Roll D6</button>
+                <button type="button" data-die="d8">Roll D8</button>
+                <button type="button" data-die="d10">Roll D10</button>
+                <button type="button" data-die="d12">Roll D12</button>
+                <button type="button" data-die="d20">Roll D20</button>
+                <button type="button" data-die="d100">Roll D100</button>
+              </div>
+              <div id="diceResult" class="dice-result">Result: —</div>
+            </div>
           </div>
         </aside>
       </div>
     </div>
 
     <script src="/app.js" defer></script>
-    <script type="module" src="/dice-panel.js"></script>
+    <script src="/dice-roller.js" defer></script>
   </body>
 </html>

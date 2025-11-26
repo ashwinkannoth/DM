@@ -28,9 +28,8 @@ curl http://localhost:3000/tracks
 ```
 
 ## Dice panel
-- Drop GLB dice models (`d4.glb`, `d6.glb`, `d8.glb`, `d10.glb`, `d12.glb`, `d20.glb`) into the `dice/` folder.
-- The right-hand panel renders all dice with Three.js and lets you animate a roll with a single button click.
-- Results appear in a live status readout, and you can keep all assets local (no CDN dependencies).
+- Quick random rolls for D4, D6, D8, D10, D12, D20, and D100 with a simple animated shimmer.
+- Results appear in a live status readout; everything runs locally with no external assets required.
 
 ## Running notes
 - Ctrl-C ends the server when you run `npm start`.
