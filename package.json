@@ -1,0 +1,15 @@
+{
+  "name": "dm-encounter-music",
+  "version": "0.1.0",
+  "description": "Local encounter music player (Node + Express + static frontend)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["dnd", "music", "dm", "encounter"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

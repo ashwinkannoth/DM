@@ -1,0 +1,23 @@
+:root{
+  --bg:#0f1720;
+  --card:#0f1720;
+  --text:#e6eef6;
+  --accent:#5dd5c8;
+}
+body{
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background: linear-gradient(180deg, #071019 0%, #0b1220 100%);
+  color:var(--text);
+  margin:0; padding:3rem; display:flex; justify-content:center;
+}
+.container{ width:720px; max-width:94%; }
+h1{ margin:0 0 1rem 0; font-size:1.6rem; }
+.player{ margin-bottom:1rem; }
+#player{ width:100%; background:#000; border-radius:5px; }
+.tracks{ background: rgba(255,255,255,0.03); padding:1rem; border-radius:8px; }
+#trackList{ list-style:none; padding:0; margin:0; }
+.trackItem{ margin:0.4rem 0; }
+.trackItem button{ width:100%; text-align:left; padding:0.6rem 0.8rem; border-radius:6px; border:1px solid rgba(255,255,255,0.06); background:transparent; color:var(--text); cursor:pointer; }
+.trackItem button:hover{ background: rgba(255,255,255,0.02); }
+.trackItem.current button{ background: linear-gradient(90deg, rgba(93,213,200,0.14), rgba(93,213,200,0.06)); border-color: rgba(93,213,200,0.3); font-weight:600; }
+.empty, .error{ color: #bfcbd6; font-style:italic; }
