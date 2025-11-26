@@ -26,4 +26,68 @@ Next steps (what maintainers often want done first)
 Contributing
 - Keep changes small and focused; add README updates documenting any architectural decisions, install/run instructions, and tests.
 
+Local dev: simple Node + Express scaffold
+--------------------------------------
+
+This repository now includes a minimal local-only Node + Express scaffold that provides a static UI and a simple API for serving local music files.
+
+Files added in the root of the project (short summary):
+- `server.js` — Express server, exposes `/tracks` API and serves `/music` and `/public` static routes.
+- `package.json` — Node project metadata (scripts + express dependency).
+- `music/` — local folder where you drop audio files (mp3, wav, m4a, ogg, flac, aac).
+- `public/` — static frontend files (`index.html`, `app.js`, `styles.css`).
+
+Quickstart: run and test locally
+--------------------------------
+
+From the project root (assumes Node and npm are installed):
+
+1) Install dependencies
+
+```bash
+npm install
+```
+
+2) Start the server
+
+```bash
+npm start
+# or
+node server.js
+```
+
+3) Open the UI
+
+- Visit: http://localhost:3000
+- The UI will show any files stored in the `music/` folder.
+
+4) Test the API or probe quickly via terminal
+
+- List tracks (should show [] when `music/` is empty):
+
+```bash
+curl http://localhost:3000/tracks
+# => [] or ["track.mp3", ...]
+```
+
+5) To try playback
+
+- Drop one or more audio files (e.g. an .mp3) into the `music/` folder.
+- Reload http://localhost:3000 — the track list will update and clicking a filename will play it in the browser using the <audio> element.
+
+Stopping / background run notes
+
+- If you start the server interactively (e.g. `node server.js`), press Ctrl-C to stop it.
+- For background runs you can redirect logs and store PID, for example:
+
+```bash
+node server.js &> server.log & echo $! > server.pid
+# later to stop
+kill $(cat server.pid) && rm server.pid
+```
+
+Next steps
+----------
+- Add tests and a CI workflow (I can scaffold a simple GitHub Actions workflow and smoke test for `/tracks` if you like).
+- Add a small sample audio track (public-domain) into the `music/` folder for instant verification.
 — end —
