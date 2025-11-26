@@ -8,67 +8,94 @@
   </head>
   <body>
     <div class="container">
-      <h1>Dungeon Master Effects Tool</h1>
-      <div class="hero">
-        <div class="pill">Local lookups · Instant crossfade · Master your mood</div>
-        <p class="lead">Drop your curated tracks into the `music/` directory, then let the UI weave themes and one-shots on demand. Perfect for combat, exploration, or atmospheric beats with zero internet latency.</p>
-      </div>
-      <p class="description">Use the themes list to loop a cinematic bed, then sprinkle one-shot effects from the right-hand column. Tap a track again to bring it down, or grab `npm start` and open the page to keep the table humming all night.</p>
-
-      <section id="controlsTop" class="chooser">
-        <div style="display:flex; align-items:center; gap:0.6rem;">
-          <div style="font-weight:600; color:var(--accent);">Browse local audio</div>
-        </div>
-      </section>
-      <section class="player">
-        <div class="playerRow">
-          <audio id="player" preload="metadata"></audio>
-          <div class="controls">
-            <button id="playPause">Play</button>
-            <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.01" value="1"></label>
+      <div class="app-layout">
+        <main class="main-content">
+          <h1>Dungeon Master Assistant</h1>
+          <div class="hero">
+            <div class="pill">Ambient orchestration · Instant reactivity</div>
+            <p class="lead">Drop your favorite tracks into `music/`, then let the Assistant paint each scene with cinematic beds and reactive effects. No cloud, no lag—just local control at the tabletop.</p>
           </div>
-        </div>
-        <div id="nowPlaying" class="nowPlaying"></div>
-      </section>
+          <p class="description">Cue a theme for travel or combat, sprinkle in impact sounds, and adjust volume without breaking the flow. The initiative tracker keeps everyone's turn order and HP visible while music swells with each move.</p>
 
-      <section class="tracks">
-        <div class="folderGrid">
-          <div class="folder">
-            <h3>Themes (loop)</h3>
-            <ul id="themesList" class="trackGroup"></ul>
-          </div>
-
-          <div class="folder">
-            <h3>Effects (one-shot)</h3>
-            <ul id="effectsList" class="trackGroup"></ul>
-          </div>
-        </div>
-      </section>
-
-      <section class="initiative" aria-label="Initiative Tracker">
-        <div class="initiative-header">
-          <div>
-            <p class="eyebrow">Table Helper</p>
-            <h2>Initiative Tracker</h2>
-            <p class="init-desc">Add heroes or foes, then drag to reorder when the battle shifts.</p>
-          </div>
-          <div class="init-actions">
-            <input id="initName" type="text" placeholder="Name a hero or monster" autocomplete="off" />
-            <label class="init-hp-label">
-              HP
-              <input id="initHP" type="number" min="0" value="10" />
-            </label>
-            <div class="init-add-buttons">
-              <button id="initHero" type="button">Add Hero</button>
-              <button id="initMonster" type="button">Add Monster</button>
+          <section id="controlsTop" class="chooser">
+            <div style="display:flex; align-items:center; gap:0.6rem;">
+              <div style="font-weight:600; color:var(--accent);">Browse local audio</div>
             </div>
-            <button id="initClear" type="button" class="ghost">Clear</button>
+          </section>
+          <section class="player">
+            <div class="playerRow">
+              <audio id="player" preload="metadata"></audio>
+              <div class="controls">
+                <button id="playPause">Play</button>
+                <label class="vol">Volume <input id="vol" type="range" min="0" max="1" step="0.01" value="1"></label>
+              </div>
+            </div>
+            <div id="nowPlaying" class="nowPlaying"></div>
+          </section>
+
+          <section class="tracks">
+            <div class="folderGrid">
+              <div class="folder">
+                <h3>Themes</h3>
+                <ul id="themesList" class="trackGroup"></ul>
+              </div>
+
+              <div class="folder">
+                <h3>Effects</h3>
+                <ul id="effectsList" class="trackGroup"></ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="initiative" aria-label="Initiative Tracker">
+            <div class="initiative-header">
+              <div>
+                <p class="eyebrow">Sound Console</p>
+                <h2>Initiative Tracker</h2>
+                <p class="init-desc">Add heroes or foes, then drag to reorder when the battle shifts.</p>
+              </div>
+              <div class="init-actions">
+                <input id="initName" type="text" placeholder="Name a hero or monster" autocomplete="off" />
+                <label class="init-hp-label">
+                  HP
+                  <input id="initHP" type="number" min="0" value="10" />
+                </label>
+                <div class="init-add-buttons">
+                  <button id="initHero" type="button">Add Hero</button>
+                  <button id="initMonster" type="button">Add Monster</button>
+                </div>
+                <button id="initClear" type="button" class="ghost">Clear</button>
+              </div>
+            </div>
+            <ul id="initList" class="init-list" aria-live="polite"></ul>
+          </section>
+        </main>
+
+        <aside class="dice-panel">
+          <div class="dice-header">
+            <h2>3D Dice Roller</h2>
+            <p>Roll every polyhedral die in stunning 3D. Place GLB dice models into the `dice/` folder and watch them tumble.</p>
           </div>
-        </div>
-        <ul id="initList" class="init-list" aria-live="polite"></ul>
-      </section>
+          <div class="dice-canvas-wrapper">
+            <canvas id="diceCanvas"></canvas>
+            <div id="diceOverlay" class="dice-overlay" aria-live="polite">waiting for your roll...</div>
+          </div>
+          <div class="dice-controls">
+            <div class="dice-buttons">
+              <button type="button" data-die="d4">Roll D4</button>
+              <button type="button" data-die="d6">Roll D6</button>
+              <button type="button" data-die="d8">Roll D8</button>
+              <button type="button" data-die="d10">Roll D10</button>
+              <button type="button" data-die="d12">Roll D12</button>
+              <button type="button" data-die="d20">Roll D20</button>
+            </div>
+            <div id="diceResult" class="dice-result">Result: —</div>
+          </div>
+        </aside>
+      </div>
     </div>
 
     <script src="/app.js" defer></script>
+    <script type="module" src="/dice-panel.js"></script>
   </body>
 </html>

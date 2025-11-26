@@ -1,39 +1,46 @@
-# Dungeon Master Sound & Mood Forge
+# Dungeon Master Assistant
 
-A tabletop soundboard that lives on your own machine. Drop music into the `music/` folder, then weave looping themes and one-shot effects with a click. Built with Node + Express for fast, offline control—no cloud taverns required.
+A spellbook for ambience that stays on your own lair. Drop your curated tracks into `music/`, spin up the server, and the Assistant lets you cue cinematic beds, mood effects, and live tweaks without leaving the table.
 
-## What’s inside the spellbook
-- Scene beds and encounter loops for travel, taverns, and tense showdowns
-- One-shot effects you can cast on/off instantly
-- Crossfades, pauses, and volume charms for mid-battle pivots
-- Runs locally or on a tiny host; keep latency out of your realm
+## Features
+- Cinematic themes to anchor combat, exploration, or downtime moments.
+- Adaptive effects that you can fire and mute with a single tap.
+- Crossfades, pauses, and a global volume charm so the soundtrack flows with the scene.
+- Runs locally (Node + Express) so you can host a session anywhere without juggling cloud latency.
+- 3D dice roller panel that loads GLB models from the `dice/` folder and lets you roll every polyhedral type.
 
-## Quick incantation
+## Quick startup
 ```bash
 npm install
 npm start    # or: node server.js
 ```
-Open http://localhost:3000 — tracks in `music/` appear automatically.
+Visit http://localhost:3000 to meet the UI; anything in `music/` loads automatically.
 
-## Field use
-- Click a theme to loop it; click again to pause
-- Click an effect to fire it; click again to silence it
-- Volume slider adjusts both themes and effects
+## How to use
+- Tap a theme to begin a loop; tap again to pause it.
+- Use the effects column to drop percussion, whispers, or impact sounds.
+- Adjust volume for both themes and effects with the slider below the player.
+- Use the initiative tracker to manage parties, foes, and HP on the fly.
 
 API ping:
 ```bash
 curl http://localhost:3000/tracks
 ```
 
-## Campfire notes
-- Ctrl-C stops a foreground run
-- Background option:
+## Dice panel
+- Drop GLB dice models (`d4.glb`, `d6.glb`, `d8.glb`, `d10.glb`, `d12.glb`, `d20.glb`) into the `dice/` folder.
+- The right-hand panel renders all dice with Three.js and lets you animate a roll with a single button click.
+- Results appear in a live status readout, and you can keep all assets local (no CDN dependencies).
+
+## Running notes
+- Ctrl-C ends the server when you run `npm start`.
+- To background it:
   ```bash
   node server.js &> server.log & echo $! > server.pid
   kill $(cat server.pid) && rm server.pid
   ```
 
 ## Contributing
-- Keep changes small and documented
-- Add install/run notes and tests with any new tricks
-- New sound packs and effects are welcome offerings
+- Keep changes focused and document new features.
+- Add install/run instructions and tests when you expand the spellbook.
+- Sound packs, effects, and UI improvements are always welcome.
