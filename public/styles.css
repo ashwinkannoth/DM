@@ -32,3 +32,9 @@ h1{ margin:0 0 1rem 0; font-size:1.6rem; }
 .empty, .error{ color: #bfcbd6; font-style:italic; }
 
 .nowPlaying{ margin-top:0.5rem; color:#a8e7df; font-size:0.92rem; }
+
+.folderGrid{ display:flex; gap:1rem; align-items:flex-start; }
+.folder{ flex:1; }
+.folder h3{ margin:0 0 0.6rem 0; font-size:1.05rem; color:var(--accent); }
+.trackGroup{ list-style:none; padding:0; margin:0; }
+.trackGroup .trackItem button{ text-align:left; }

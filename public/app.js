@@ -21,41 +21,61 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.player').style.display = show ? 'block' : 'none';
   }
 
-  async function loadTracks(folder) {
+  // load both folders and render onto the main page
+  async function loadBoth() {
     try {
-      const res = await fetch('/tracks' + (folder ? '?subdir=' + encodeURIComponent(folder) : ''));
-      if (!res.ok) {
-        const text = await res.json().catch(() => ({}));
-        throw new Error(text && text.error ? text.error : 'Failed to fetch tracks');
+      const [themesRes, effectsRes] = await Promise.all([
+        fetch('/tracks?subdir=themes'),
+        fetch('/tracks?subdir=effects'),
+      ]);
+
+      if (!themesRes.ok || !effectsRes.ok) {
+        const tErr = await themesRes.json().catch(()=>({}));
+        const eErr = await effectsRes.json().catch(()=>({}));
+        const msg = (tErr && tErr.error) || (eErr && eErr.error) || 'Failed to fetch tracks';
+        throw new Error(msg);
       }
-      const tracks = await res.json();
-      renderTracks(tracks);
+
+      const themes = await themesRes.json();
+      const effects = await effectsRes.json();
+
+      renderTracksFor('themes', themes);
+      renderTracksFor('effects', effects);
     } catch (err) {
-      list.innerHTML = `<li class="error">${err.message}</li>`;
+      // show errors in both lists
+      const themesList = document.getElementById('themesList');
+      const effectsList = document.getElementById('effectsList');
+      themesList.innerHTML = `<li class="error">${err.message}</li>`;
+      effectsList.innerHTML = `<li class="error">${err.message}</li>`;
     }
   }
 
-  function renderTracks(tracks) {
+  function renderTracksFor(kind, tracks) {
+    const target = kind === 'themes' ? document.getElementById('themesList') : document.getElementById('effectsList');
     if (!tracks || tracks.length === 0) {
-      list.innerHTML = '<li class="empty">No audio files found in this folder — drop mp3s into the music folder.</li>';
+      target.innerHTML = '<li class="empty">No audio files found in this folder — drop mp3s into the music folder.</li>';
       return;
     }
 
-    list.innerHTML = '';
+    target.innerHTML = '';
     tracks.forEach((t) => {
       const li = document.createElement('li');
       li.className = 'trackItem';
       const btn = document.createElement('button');
       btn.textContent = t.name;
-      btn.addEventListener('click', () => playTrack(t, li));
+      btn.addEventListener('click', () => {
+        currentFolder = kind;
+        playTrack(t, li);
+      });
       li.appendChild(btn);
-      list.appendChild(li);
+      target.appendChild(li);
     });
   }
 
   function playTrack(track, li) {
     const url = track.url; // server returns proper path including subdir
     player.src = url;
+    // loop only for themes; effects are one-shot
     player.loop = currentFolder === 'themes';
     player.play().catch(() => {
       // autoplay may be blocked; user can use play button
@@ -99,28 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
     player.volume = parseFloat(vol.value);
   });
 
-  // Mode buttons
-  btnThemes.addEventListener('click', () => openFolder('themes'));
-  btnEffects.addEventListener('click', () => openFolder('effects'));
-
-  backBtn.addEventListener('click', () => {
-    currentFolder = null;
-    showChooser(true);
-    showTrackSection(false);
-    nowPlaying.textContent = '';
-  });
-
-  function openFolder(folder) {
-    currentFolder = folder;
-    showChooser(false);
-    showTrackSection(true);
-    tracksTitle.textContent = folder.charAt(0).toUpperCase() + folder.slice(1);
-    loadTracks(folder);
-    // set loop behavior for themes permanently
-    player.loop = folder === 'themes';
-  }
-
-  // initial state
-  showChooser(true);
-  showTrackSection(false);
+  // initial state — load both lists and show page
+  showChooser(false);
+  showTrackSection(true);
+  loadBoth();
 });
