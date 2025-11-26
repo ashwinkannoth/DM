@@ -1,15 +1,15 @@
-# DM — Encounter Music Player
+# Dungeon Master Effects Tool
 
-DM is an application that lets tabletop game masters (Dungeon Masters, Game Masters) play and control music and soundscapes tailored to specific encounters, NPCs, locations, and effects.
+This project is a lightweight, local-first tool for tabletop game masters (Dungeon Masters / Game Masters) and DnD fans who want an easy way to play encounter music, ambient themes, and one-shot sound effects during sessions.
 
-This repo is the home for a small, installable application/service that provides:
+This repo contains a small, installable Node + Express app that provides:
 
 - Curated music and ambient soundtracks for encounters and scenes
 - Per-encounter playlists, layered effects (reverb, intensity), and timed triggers
 - Quick controls for on-the-fly changes during a session (fade, mute, loop, crossfade)
 - Lightweight installation so a DM can run it locally or host for groups
 
-Goals
+- Goals
 - Provide a minimal usable MVP that can be installed and run locally (desktop or server).
 - Offer an API / UI for selecting an "encounter" or in-session state and start/stop or alter music and effects.
 - Keep the first implementation small, well-tested, and documented so contributors can add new content packs and features.
@@ -17,6 +17,11 @@ Goals
 Examples (how it will be used)
 - During combat, a DM picks a "Goblin Ambush" encounter; the app crossfades into combat music with higher intensity and adds percussion effects.
 - For a spooky cave, the DM selects a "Cave — low light" preset; ambient drones and drip sounds loop and reverb is added to voice channels.
+
+Planned updates
+- Add more curated themes and effects packs (community or curated content).
+- Improve GUI and accessibility — better controls, playlists, and streamlining for live sessions.
+- Add tests and CI so contributors can add new content safely.
 
 Next steps (what maintainers often want done first)
 1. Decide on a target runtime (Node.js/Electron for a cross-platform desktop app, or Python/Flask for a lightweight server + web UI). If unsure, propose two minimal scaffolds (Node and Python) and include tests.
@@ -88,6 +93,7 @@ kill $(cat server.pid) && rm server.pid
 
 Next steps
 ----------
-- Add tests and a CI workflow (I can scaffold a simple GitHub Actions workflow and smoke test for `/tracks` if you like).
+- Add tests and a CI workflow (I can scaffold a simple GitHub Actions workflow and smoke test `/tracks` if you like).
 - Add a small sample audio track (public-domain) into the `music/` folder for instant verification.
+- Update the GUI with more effects features and additional curated themes soon (UI/UX improvements are planned).
 — end —
