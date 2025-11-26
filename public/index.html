@@ -9,6 +9,11 @@
   <body>
     <div class="container">
       <h1>Dungeon Master Effects Tool</h1>
+      <div class="hero">
+        <div class="pill">Local lookups · Instant crossfade · Master your mood</div>
+        <p class="lead">Drop your curated tracks into the `music/` directory, then let the UI weave themes and one-shots on demand. Perfect for combat, exploration, or atmospheric beats with zero internet latency.</p>
+      </div>
+      <p class="description">Use the themes list to loop a cinematic bed, then sprinkle one-shot effects from the right-hand column. Tap a track again to bring it down, or grab `npm start` and open the page to keep the table humming all night.</p>
 
       <section id="controlsTop" class="chooser">
         <div style="display:flex; align-items:center; gap:0.6rem;">
@@ -38,6 +43,29 @@
             <ul id="effectsList" class="trackGroup"></ul>
           </div>
         </div>
+      </section>
+
+      <section class="initiative" aria-label="Initiative Tracker">
+        <div class="initiative-header">
+          <div>
+            <p class="eyebrow">Table Helper</p>
+            <h2>Initiative Tracker</h2>
+            <p class="init-desc">Add heroes or foes, then drag to reorder when the battle shifts.</p>
+          </div>
+          <div class="init-actions">
+            <input id="initName" type="text" placeholder="Name a hero or monster" autocomplete="off" />
+            <label class="init-hp-label">
+              HP
+              <input id="initHP" type="number" min="0" value="10" />
+            </label>
+            <div class="init-add-buttons">
+              <button id="initHero" type="button">Add Hero</button>
+              <button id="initMonster" type="button">Add Monster</button>
+            </div>
+            <button id="initClear" type="button" class="ghost">Clear</button>
+          </div>
+        </div>
+        <ul id="initList" class="init-list" aria-live="polite"></ul>
       </section>
     </div>
 

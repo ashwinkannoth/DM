@@ -1,17 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const list = document.getElementById('trackList');
-  // main theme player (only one theme at a time)
   const themePlayer = document.getElementById('player');
-  const btnThemes = document.getElementById('btnThemes');
-  const btnEffects = document.getElementById('btnEffects');
-  const backBtn = document.getElementById('back');
-  const tracksTitle = document.getElementById('tracksTitle');
   const playPause = document.getElementById('playPause');
   const vol = document.getElementById('vol');
   const nowPlaying = document.getElementById('nowPlaying');
 
   let currentThemeItem = null; // currently-selected theme <li>
-  let activeEffects = []; // array of currently playing effect Audio objects {audio, li}
+  const activeEffects = new Map(); // map from track url to {audio, li}
 
   const chooserEl = document.querySelector('.chooser');
   const tracksEl = document.querySelector('.tracks');
@@ -68,12 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
     tracks.forEach((t) => {
       const li = document.createElement('li');
       li.className = 'trackItem';
+      const displayName = t.name.replace(/\.[^/.]+$/, '');
       const btn = document.createElement('button');
-      btn.textContent = t.name;
+      btn.textContent = displayName;
       if (kind === 'themes') {
         btn.addEventListener('click', () => playTheme(t, li));
       } else {
-        btn.addEventListener('click', () => playEffect(t, li));
+        btn.addEventListener('click', () => toggleEffect(t, li));
       }
       li.appendChild(btn);
       target.appendChild(li);
@@ -150,24 +145,33 @@ document.addEventListener('DOMContentLoaded', () => {
     nowPlaying.textContent = `Theme: ${track.name}`;
   }
 
-  function playEffect(track, li) {
+  function cleanupEffect(url) {
+    const entry = activeEffects.get(url);
+    if (!entry) return;
+    entry.li.classList.remove('playing-effect');
+    activeEffects.delete(url);
+  }
+
+  function toggleEffect(track, li) {
     const url = track.url;
+
+    // if already playing, stop it immediately
+    const existing = activeEffects.get(url);
+    if (existing) {
+      existing.audio.pause();
+      existing.audio.currentTime = 0;
+      cleanupEffect(url);
+      return;
+    }
+
     const fx = new Audio(url);
     fx.loop = false;
     fx.volume = parseFloat(vol.value || themePlayer.volume || 1);
-    // highlight while effect is playing
     li.classList.add('playing-effect');
-    activeEffects.push({ audio: fx, li });
+    activeEffects.set(url, { audio: fx, li });
     fx.play().catch(() => {});
-    fx.addEventListener('ended', () => {
-      li.classList.remove('playing-effect');
-      // remove from activeEffects
-      activeEffects = activeEffects.filter(e => e.audio !== fx);
-    });
-    fx.addEventListener('error', () => {
-      li.classList.remove('playing-effect');
-      activeEffects = activeEffects.filter(e => e.audio !== fx);
-    });
+    fx.addEventListener('ended', () => cleanupEffect(url));
+    fx.addEventListener('error', () => cleanupEffect(url));
   }
 
   // Play/pause controls (affect theme only)
@@ -191,7 +195,135 @@ document.addEventListener('DOMContentLoaded', () => {
     const v = parseFloat(vol.value);
     themePlayer.volume = v;
     // update all active effects volumes too
-    activeEffects.forEach(e => { try { e.audio.volume = v; } catch(e){} });
+    activeEffects.forEach(({ audio }) => { try { audio.volume = v; } catch (err) {} });
+  });
+
+  // Initiative Tracker logic
+  const initInput = document.getElementById('initName');
+  const initHPInput = document.getElementById('initHP');
+  const initHero = document.getElementById('initHero');
+  const initMonster = document.getElementById('initMonster');
+  const initClear = document.getElementById('initClear');
+  const initList = document.getElementById('initList');
+  let draggedItem = null;
+
+  function createInitRow(name, type, hp) {
+    const li = document.createElement('li');
+    li.className = 'init-item';
+    li.dataset.type = type;
+    li.draggable = true;
+
+    const main = document.createElement('div');
+    main.className = 'init-main';
+
+    const label = document.createElement('span');
+    label.className = 'init-name';
+    label.textContent = name;
+
+    const typeBadge = document.createElement('span');
+    typeBadge.className = 'init-type';
+    typeBadge.textContent = type === 'hero' ? 'Hero' : 'Monster';
+
+    main.appendChild(label);
+    main.appendChild(typeBadge);
+
+    const meta = document.createElement('div');
+    meta.className = 'init-meta';
+
+    const hpLabel = document.createElement('label');
+    hpLabel.className = 'init-hp-label-inline';
+    hpLabel.textContent = 'HP';
+
+    const hpInput = document.createElement('input');
+    hpInput.type = 'number';
+    hpInput.min = '0';
+    hpInput.className = 'init-hp';
+    hpInput.value = hp;
+    hpInput.addEventListener('click', (e) => e.stopPropagation());
+
+    hpLabel.appendChild(hpInput);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'init-remove';
+    removeBtn.textContent = '✕';
+    removeBtn.addEventListener('click', () => li.remove());
+
+    meta.appendChild(hpLabel);
+    meta.appendChild(removeBtn);
+
+    li.appendChild(main);
+    li.appendChild(meta);
+
+    addDragHandlers(li);
+    return li;
+  }
+
+  function addInitiative(type) {
+    if (!initInput) return;
+    const name = initInput.value.trim();
+    if (!name) return;
+    const hp = (initHPInput?.value || '').trim() || '0';
+    const row = createInitRow(name, type, hp);
+    initList.appendChild(row);
+    initInput.value = '';
+    if (initHPInput) initHPInput.value = '';
+    initInput.focus();
+  }
+
+  function clearInitiative() {
+    if (initList) initList.innerHTML = '';
+    initInput?.focus();
+  }
+
+  function addDragHandlers(li) {
+    li.addEventListener('dragstart', (e) => {
+      draggedItem = li;
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', li.querySelector('.init-name')?.textContent || '');
+    });
+    li.addEventListener('dragend', () => {
+      li.classList.remove('dragging');
+      draggedItem = null;
+    });
+  }
+
+  function getDragAfterElement(container, y) {
+    const items = [...container.querySelectorAll('.init-item:not(.dragging)')];
+    return items.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      }
+      return closest;
+    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+  }
+
+  initHero?.addEventListener('click', () => addInitiative('hero'));
+  initMonster?.addEventListener('click', () => addInitiative('monster'));
+  initClear?.addEventListener('click', clearInitiative);
+  initInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addInitiative('hero');
+    }
+  });
+
+  initList?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(initList, e.clientY);
+    if (!draggedItem) return;
+    if (!afterElement) {
+      initList.appendChild(draggedItem);
+    } else {
+      initList.insertBefore(draggedItem, afterElement);
+    }
+  });
+
+  initList?.addEventListener('drop', (e) => {
+    e.preventDefault();
   });
 
   // initial state — load both lists and show page
