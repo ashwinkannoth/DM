@@ -13,35 +13,41 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentThemeItem = null; // currently-selected theme <li>
   let activeEffects = []; // array of currently playing effect Audio objects {audio, li}
 
+  const chooserEl = document.querySelector('.chooser');
+  const tracksEl = document.querySelector('.tracks');
+  const playerEl = document.querySelector('.player');
+
   function showChooser(show) {
-    document.querySelector('.chooser').style.display = show ? 'block' : 'none';
+    chooserEl.style.display = show ? 'block' : 'none';
   }
 
   function showTrackSection(show) {
-    document.querySelector('.tracks').style.display = show ? 'block' : 'none';
-    document.querySelector('.player').style.display = show ? 'block' : 'none';
+    tracksEl.style.display = show ? 'block' : 'none';
+    playerEl.style.display = show ? 'block' : 'none';
   }
 
-  // load both folders and render onto the main page
+  async function fetchTracks(subdir) {
+    const url = subdir ? `/tracks?subdir=${encodeURIComponent(subdir)}` : '/tracks';
+    const res = await fetch(url);
+    if (res.ok) return res.json();
+    if (res.status === 404) return null; // missing subdir, fallback later
+    const data = await res.json().catch(() => ({}));
+    const msg = data.error || `Failed to fetch ${subdir || 'tracks'}`;
+    throw new Error(msg);
+  }
+
+  // Load themes/effects; if no subfolders exist, fall back to root music files
   async function loadBoth() {
     try {
-      const [themesRes, effectsRes] = await Promise.all([
-        fetch('/tracks?subdir=themes'),
-        fetch('/tracks?subdir=effects'),
+      const [rootTracks, themesTracks, effectsTracks] = await Promise.all([
+        fetchTracks(),
+        fetchTracks('themes'),
+        fetchTracks('effects'),
       ]);
 
-      if (!themesRes.ok || !effectsRes.ok) {
-        const tErr = await themesRes.json().catch(()=>({}));
-        const eErr = await effectsRes.json().catch(()=>({}));
-        const msg = (tErr && tErr.error) || (eErr && eErr.error) || 'Failed to fetch tracks';
-        throw new Error(msg);
-      }
-
-      const themes = await themesRes.json();
-      const effects = await effectsRes.json();
-
-      renderTracksFor('themes', themes);
-      renderTracksFor('effects', effects);
+      const fallback = rootTracks || [];
+      renderTracksFor('themes', themesTracks || fallback);
+      renderTracksFor('effects', effectsTracks || fallback);
     } catch (err) {
       // show errors in both lists
       const themesList = document.getElementById('themesList');
@@ -143,8 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
     currentThemeItem = li;
     nowPlaying.textContent = `Theme: ${track.name}`;
   }
-      // autoplay may be blocked; user can use play button
-    });
 
   function playEffect(track, li) {
     const url = track.url;
@@ -164,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
       li.classList.remove('playing-effect');
       activeEffects = activeEffects.filter(e => e.audio !== fx);
     });
-  }
   }
 
   // Play/pause controls (affect theme only)
