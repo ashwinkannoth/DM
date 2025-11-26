@@ -211,10 +211,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const li = document.createElement('li');
     li.className = 'init-item';
     li.dataset.type = type;
+    li.dataset.hp = Number(hp) || 0;
     li.draggable = true;
 
     const main = document.createElement('div');
     main.className = 'init-main';
+
+    const labelWrap = document.createElement('div');
+    labelWrap.className = 'init-title';
 
     const label = document.createElement('span');
     label.className = 'init-name';
@@ -224,24 +228,65 @@ document.addEventListener('DOMContentLoaded', () => {
     typeBadge.className = 'init-type';
     typeBadge.textContent = type === 'hero' ? 'Hero' : 'Monster';
 
-    main.appendChild(label);
-    main.appendChild(typeBadge);
+    const hpDisplay = document.createElement('span');
+    hpDisplay.className = 'init-hp-display';
 
-    const meta = document.createElement('div');
-    meta.className = 'init-meta';
+    const hpControls = document.createElement('div');
+    hpControls.className = 'hp-controls';
 
-    const hpLabel = document.createElement('label');
-    hpLabel.className = 'init-hp-label-inline';
-    hpLabel.textContent = 'HP';
+    const minusBtn = document.createElement('button');
+    minusBtn.type = 'button';
+    minusBtn.className = 'hp-btn';
+    minusBtn.textContent = '−';
+    minusBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setHP(li, hpInput, (Number(li.dataset.hp) || 0) - 1);
+    });
 
     const hpInput = document.createElement('input');
     hpInput.type = 'number';
-    hpInput.min = '0';
     hpInput.className = 'init-hp';
     hpInput.value = hp;
     hpInput.addEventListener('click', (e) => e.stopPropagation());
+    hpInput.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      adjustHP(li, hpInput);
+    });
+    hpInput.addEventListener('blur', () => {
+      const next = parseHPInput(hpInput.value, Number(li.dataset.hp) || 0);
+      if (next === null) {
+        hpInput.value = li.dataset.hp;
+        hpDisplay.textContent = `HP: ${li.dataset.hp}`;
+        return;
+      }
+      setHP(li, hpInput, next);
+    });
 
-    hpLabel.appendChild(hpInput);
+    const plusBtn = document.createElement('button');
+    plusBtn.type = 'button';
+    plusBtn.className = 'hp-btn';
+    plusBtn.textContent = '+';
+    plusBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setHP(li, hpInput, (Number(li.dataset.hp) || 0) + 1);
+    });
+
+    hpControls.appendChild(minusBtn);
+    hpControls.appendChild(hpInput);
+    hpControls.appendChild(plusBtn);
+
+    hpDisplay.textContent = `HP: ${li.dataset.hp}`;
+
+    labelWrap.appendChild(label);
+    labelWrap.appendChild(typeBadge);
+    labelWrap.appendChild(hpDisplay);
+
+    main.appendChild(labelWrap);
+    main.appendChild(hpControls);
+
+    const meta = document.createElement('div');
+    meta.className = 'init-meta';
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -249,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
     removeBtn.textContent = '✕';
     removeBtn.addEventListener('click', () => li.remove());
 
-    meta.appendChild(hpLabel);
     meta.appendChild(removeBtn);
 
     li.appendChild(main);
@@ -257,6 +301,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addDragHandlers(li);
     return li;
+  }
+
+  function setHP(li, hpInput, next) {
+    li.dataset.hp = next;
+    hpInput.value = next;
+    const display = li.querySelector('.init-hp-display');
+    if (display) display.textContent = `HP: ${next}`;
+    if (next <= 0 && li.dataset.type === 'monster') {
+      li.remove();
+    }
+  }
+
+  function parseHPInput(raw, current) {
+    const trimmed = (raw || '').trim();
+    if (!trimmed) return null;
+
+    if (trimmed.startsWith('+') || trimmed.startsWith('-')) {
+      const delta = Number(trimmed);
+      if (Number.isFinite(delta)) return current + delta;
+    }
+
+    const asNumber = Number(trimmed);
+    if (Number.isFinite(asNumber)) return asNumber;
+
+    if (/^[0-9+\-*/().\s]+$/.test(trimmed)) {
+      try {
+        // eslint-disable-next-line no-new-func
+        const val = Function(`"use strict"; return (${trimmed});`)();
+        if (Number.isFinite(val)) return val;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    return null;
+  }
+
+  function adjustHP(li, hpInput) {
+    const raw = hpInput.value;
+    const current = Number(li.dataset.hp) || 0;
+    const next = parseHPInput(raw, current);
+    if (next === null) return;
+    setHP(li, hpInput, next);
   }
 
   function addInitiative(type) {
@@ -272,7 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function clearInitiative() {
-    if (initList) initList.innerHTML = '';
+    if (!initList) return;
+    initList.querySelectorAll('.init-item[data-type="monster"]').forEach((li) => li.remove());
     initInput?.focus();
   }
 
