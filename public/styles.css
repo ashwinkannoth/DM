@@ -58,6 +58,12 @@ h1{ margin:0 0 1rem 0; font-size:1.6rem; }
 .trackGroup{ list-style:none; padding:0; margin:0; }
 .trackGroup .trackItem button{ text-align:left; }
 
+/* playing effect state */
+.trackItem.playing-effect button{
+  outline: 2px dashed rgba(255,255,255,0.06);
+  transform: translateY(-2px) scale(1.01);
+}
+
 /* make lists look like floating glass cards */
 .folder{
   background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));

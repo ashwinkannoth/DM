@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const list = document.getElementById('trackList');
-  const player = document.getElementById('player');
+  // main theme player (only one theme at a time)
+  const themePlayer = document.getElementById('player');
   const btnThemes = document.getElementById('btnThemes');
   const btnEffects = document.getElementById('btnEffects');
   const backBtn = document.getElementById('back');
@@ -9,8 +10,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const vol = document.getElementById('vol');
   const nowPlaying = document.getElementById('nowPlaying');
 
-  let currentItem = null;
-  let currentFolder = null; // 'themes' | 'effects'
+  let currentThemeItem = null; // currently-selected theme <li>
+  let activeEffects = []; // array of currently playing effect Audio objects {audio, li}
 
   function showChooser(show) {
     document.querySelector('.chooser').style.display = show ? 'block' : 'none';
@@ -63,60 +64,131 @@ document.addEventListener('DOMContentLoaded', () => {
       li.className = 'trackItem';
       const btn = document.createElement('button');
       btn.textContent = t.name;
-      btn.addEventListener('click', () => {
-        currentFolder = kind;
-        playTrack(t, li);
-      });
+      if (kind === 'themes') {
+        btn.addEventListener('click', () => playTheme(t, li));
+      } else {
+        btn.addEventListener('click', () => playEffect(t, li));
+      }
       li.appendChild(btn);
       target.appendChild(li);
     });
   }
 
+  // Fade helpers for theme crossfade
+  let themeFadeTimer = null;
+  function setThemeVolumeGradually(from, to, duration = 700) {
+    if (themeFadeTimer) clearInterval(themeFadeTimer);
+    const start = performance.now();
+    const diff = to - from;
+    themePlayer.volume = from;
+    themeFadeTimer = setInterval(() => {
+      const now = performance.now();
+      const t = Math.min(1, (now - start) / duration);
+      themePlayer.volume = Math.max(0, Math.min(1, from + diff * t));
+      if (t === 1) {
+        clearInterval(themeFadeTimer);
+        themeFadeTimer = null;
+      }
+    }, 30);
+  }
+
   function playTrack(track, li) {
     const url = track.url; // server returns proper path including subdir
-    player.src = url;
-    // loop only for themes; effects are one-shot
-    player.loop = currentFolder === 'themes';
-    player.play().catch(() => {
+    themePlayer.src = url;
+    themePlayer.loop = true;
+    themePlayer.play().catch(() => {});
+    if (currentThemeItem) currentThemeItem.classList.remove('current');
+    li.classList.add('current');
+    currentThemeItem = li;
+    nowPlaying.textContent = `Theme: ${track.name}`;
+  }
+
+  function playTheme(track, li) {
+    // If same theme clicked toggle pause/resume
+    const url = track.url;
+    if (themePlayer.src && themePlayer.src.endsWith(url)) {
+      // toggle play/pause
+      if (themePlayer.paused) themePlayer.play();
+      else themePlayer.pause();
+      return;
+    }
+
+    // Crossfade from current theme to new one
+    const targetVol = parseFloat(vol.value || 1);
+    if (!themePlayer.src) {
+      // nothing playing, just start at 0 and fade in
+      themePlayer.src = url;
+      themePlayer.loop = true;
+      themePlayer.volume = 0;
+      themePlayer.play().catch(() => {});
+      setThemeVolumeGradually(0, targetVol);
+    } else {
+      // fade out, then switch and fade in
+      const currentVol = themePlayer.volume || targetVol;
+      setThemeVolumeGradually(currentVol, 0, 500);
+      // wait for fade-out to complete then switch
+      setTimeout(() => {
+        themePlayer.pause();
+        themePlayer.src = url;
+        themePlayer.loop = true;
+        themePlayer.currentTime = 0;
+        themePlayer.volume = 0;
+        themePlayer.play().catch(() => {});
+        setThemeVolumeGradually(0, targetVol, 700);
+      }, 520);
+    }
+
+    if (currentThemeItem) currentThemeItem.classList.remove('current');
+    li.classList.add('current');
+    currentThemeItem = li;
+    nowPlaying.textContent = `Theme: ${track.name}`;
+  }
       // autoplay may be blocked; user can use play button
     });
 
-    if (currentItem) currentItem.classList.remove('current');
-    li.classList.add('current');
-    currentItem = li;
-    nowPlaying.textContent = `Now playing: ${track.name}`;
-
-    // If this is an effect (play once), remove highlight when finished
-    if (currentFolder === 'effects') {
-      player.onended = () => {
-        if (currentItem) currentItem.classList.remove('current');
-        currentItem = null;
-        nowPlaying.textContent = '';
-      };
-    } else {
-      player.onended = null;
-    }
+  function playEffect(track, li) {
+    const url = track.url;
+    const fx = new Audio(url);
+    fx.loop = false;
+    fx.volume = parseFloat(vol.value || themePlayer.volume || 1);
+    // highlight while effect is playing
+    li.classList.add('playing-effect');
+    activeEffects.push({ audio: fx, li });
+    fx.play().catch(() => {});
+    fx.addEventListener('ended', () => {
+      li.classList.remove('playing-effect');
+      // remove from activeEffects
+      activeEffects = activeEffects.filter(e => e.audio !== fx);
+    });
+    fx.addEventListener('error', () => {
+      li.classList.remove('playing-effect');
+      activeEffects = activeEffects.filter(e => e.audio !== fx);
+    });
+  }
   }
 
-  // Play/pause controls
+  // Play/pause controls (affect theme only)
   playPause.addEventListener('click', () => {
-    if (!player.src) return;
-    if (player.paused) {
-      player.play();
+    if (!themePlayer.src) return;
+    if (themePlayer.paused) {
+      themePlayer.play();
       playPause.textContent = 'Pause';
     } else {
-      player.pause();
+      themePlayer.pause();
       playPause.textContent = 'Play';
     }
   });
 
   // Update play/pause button when playback state changes
-  player.addEventListener('play', () => (playPause.textContent = 'Pause'));
-  player.addEventListener('pause', () => (playPause.textContent = 'Play'));
+  themePlayer.addEventListener('play', () => (playPause.textContent = 'Pause'));
+  themePlayer.addEventListener('pause', () => (playPause.textContent = 'Play'));
 
   // Volume slider
   vol.addEventListener('input', () => {
-    player.volume = parseFloat(vol.value);
+    const v = parseFloat(vol.value);
+    themePlayer.volume = v;
+    // update all active effects volumes too
+    activeEffects.forEach(e => { try { e.audio.volume = v; } catch(e){} });
   });
 
   // initial state — load both lists and show page
