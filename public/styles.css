@@ -290,6 +290,20 @@ h1{
   flex-wrap:wrap;
   justify-content:flex-end;
 }
+.init-panel{
+  display:flex;
+  gap:0.8rem;
+}
+.init-label{
+  display:flex;
+  flex-direction:column;
+  font-size:0.75rem;
+  letter-spacing:0.08em;
+  color:var(--muted);
+  text-transform:uppercase;
+  font-weight:600;
+  gap:0.25rem;
+}
 .init-actions input{
   background: rgba(255,255,255,0.06);
   border:1px solid rgba(255,255,255,0.12);
@@ -297,6 +311,29 @@ h1{
   padding:0.55rem 0.75rem;
   border-radius:12px;
   min-width:220px;
+}
+.monster-suggestions{
+  width:100%;
+  list-style:none;
+  margin:0;
+  padding:0.25rem 0.4rem;
+  max-height:160px;
+  overflow:auto;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+  background: rgba(255,255,255,0.02);
+  display:none;
+  flex-direction:column;
+  gap:0.2rem;
+}
+.monster-suggestions li{
+  padding:0.35rem 0.5rem;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:0.9rem;
+}
+.monster-suggestions li:hover{
+  background: rgba(255,255,255,0.05);
 }
 .init-hp-label{
   display:flex;
@@ -366,6 +403,13 @@ h1{
   align-items:center;
   gap:0.4rem;
   flex-wrap:wrap;
+}
+.init-ac-badge{
+  font-size:0.85rem;
+  color:var(--muted);
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.08);
+  padding:0.15rem 0.65rem;
 }
 .init-name{ font-weight:600; color:var(--text); }
 .init-type{

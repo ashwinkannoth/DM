@@ -17,7 +17,7 @@
           </div>
           <p class="description">Select themes for travel or combat, layer in effects, and let the initiative tracker keep turns and HP front-and-center.</p>
           <div class="hero-foot">
-            <a class="hero-link" href="/monster-manual/">Monster Manual</a>
+            <a class="hero-link" href="/monster-manual/">Click here for a full Monster Manual.</a>
           </div>
 
           <section id="controlsTop" class="chooser">
@@ -58,16 +58,29 @@
                 <p class="init-desc">Add heroes or foes, then drag to reorder when the battle shifts.</p>
               </div>
               <div class="init-actions">
+                <div class="init-panel">
+                  <label class="init-label">
+                    Type
+                    <select id="initType">
+                      <option value="hero">Hero</option>
+                      <option value="monster">Monster</option>
+                    </select>
+                  </label>
+                  <label class="init-label">
+                    AC
+                    <input id="initAC" type="number" value="" disabled />
+                  </label>
+                </div>
                 <input id="initName" type="text" placeholder="Name a hero or monster" autocomplete="off" />
+                <ul id="monsterSuggestions" class="monster-suggestions" aria-live="polite" role="listbox"></ul>
                 <label class="init-hp-label">
                   HP
-                  <input id="initHP" type="number" min="0" value="10" />
+                  <input id="initHP" type="number" min="0" value="" />
                 </label>
                 <div class="init-add-buttons">
-                  <button id="initHero" type="button">Add Hero</button>
-                  <button id="initMonster" type="button">Add Monster</button>
+                  <button id="initAdd" type="button">Add</button>
+                  <button id="initClear" type="button" class="ghost">Clear</button>
                 </div>
-                <button id="initClear" type="button" class="ghost">Clear</button>
               </div>
             </div>
             <ul id="initList" class="init-list" aria-live="polite"></ul>
@@ -99,6 +112,7 @@
       </div>
     </div>
 
+    <script src="/monster-manual/monsters.js" defer></script>
     <script src="/app.js" defer></script>
     <script src="/dice-roller.js" defer></script>
   </body>

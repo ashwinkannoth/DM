@@ -199,15 +199,78 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Initiative Tracker logic
+  const typeSelect = document.getElementById('initType');
+  const acInput = document.getElementById('initAC');
   const initInput = document.getElementById('initName');
   const initHPInput = document.getElementById('initHP');
-  const initHero = document.getElementById('initHero');
-  const initMonster = document.getElementById('initMonster');
+  const initAdd = document.getElementById('initAdd');
+  const monsterSuggestions = document.getElementById('monsterSuggestions');
   const initClear = document.getElementById('initClear');
   const initList = document.getElementById('initList');
   let draggedItem = null;
 
-  function createInitRow(name, type, hp) {
+  const monstersIndex = (window.MONSTERS || []).map((monster) => ({
+    name: monster.name,
+    nameLower: monster.name.toLowerCase(),
+    hp: monster.hp,
+    ac: monster.ac
+  }));
+  let selectedMonster = null;
+
+  function updateSuggestions(term) {
+    if (typeSelect?.value !== 'monster' || !term) {
+      monsterSuggestions.innerHTML = '';
+      if (monsterSuggestions) monsterSuggestions.style.display = 'none';
+      return;
+    }
+    const matches = monstersIndex
+      .filter((m) => m.nameLower.includes(term.toLowerCase()))
+      .slice(0, 6);
+    if (monsterSuggestions) {
+      if (matches.length === 0) {
+        monsterSuggestions.innerHTML = '<li>No matches</li>';
+        monsterSuggestions.style.display = 'flex';
+        return;
+      }
+      monsterSuggestions.innerHTML = matches
+        .map((m) => `<li data-name="${m.name}">${m.name}</li>`)
+        .join('');
+      monsterSuggestions.style.display = 'flex';
+    }
+  }
+
+  function clearMonsterSelection() {
+    selectedMonster = null;
+    acInput.value = '';
+    if (monsterSuggestions) {
+      monsterSuggestions.innerHTML = '';
+      monsterSuggestions.style.display = 'none';
+    }
+  }
+
+  typeSelect?.addEventListener('change', () => {
+    if (typeSelect.value !== 'monster') {
+      clearMonsterSelection();
+      initHPInput.value = '';
+      acInput.value = '';
+    }
+    initInput.value = '';
+  });
+
+  monsterSuggestions?.addEventListener('click', (event) => {
+    const li = event.target.closest('li');
+    if (!li || typeSelect?.value !== 'monster') return;
+    const match = monstersIndex.find((m) => m.name === li.dataset.name);
+    if (!match) return;
+    selectedMonster = match;
+    initInput.value = match.name;
+    initHPInput.value = match.hp;
+    acInput.value = match.ac;
+    monsterSuggestions.innerHTML = '';
+    monsterSuggestions.style.display = 'none';
+  });
+
+  function createInitRow(name, type, hp, ac = '') {
     const li = document.createElement('li');
     li.className = 'init-item';
     li.dataset.type = type;
@@ -228,8 +291,9 @@ document.addEventListener('DOMContentLoaded', () => {
     typeBadge.className = 'init-type';
     typeBadge.textContent = type === 'hero' ? 'Hero' : 'Monster';
 
-    const hpDisplay = document.createElement('span');
-    hpDisplay.className = 'init-hp-display';
+    const acBadge = document.createElement('span');
+    acBadge.className = 'init-ac-badge';
+    acBadge.textContent = ac ? `AC ${ac}` : 'AC —';
 
     const hpControls = document.createElement('div');
     hpControls.className = 'hp-controls';
@@ -246,7 +310,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hpInput = document.createElement('input');
     hpInput.type = 'number';
     hpInput.className = 'init-hp';
-    hpInput.value = hp;
+    hpInput.value = hp || '';
     hpInput.addEventListener('click', (e) => e.stopPropagation());
     hpInput.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter') return;
@@ -276,10 +340,13 @@ document.addEventListener('DOMContentLoaded', () => {
     hpControls.appendChild(hpInput);
     hpControls.appendChild(plusBtn);
 
+    const hpDisplay = document.createElement('span');
+    hpDisplay.className = 'init-hp-display';
     hpDisplay.textContent = `HP: ${li.dataset.hp}`;
 
     labelWrap.appendChild(label);
     labelWrap.appendChild(typeBadge);
+    labelWrap.appendChild(acBadge);
     labelWrap.appendChild(hpDisplay);
 
     main.appendChild(labelWrap);
@@ -346,15 +413,27 @@ document.addEventListener('DOMContentLoaded', () => {
     setHP(li, hpInput, next);
   }
 
-  function addInitiative(type) {
-    if (!initInput) return;
-    const name = initInput.value.trim();
+  function addInitiative() {
+    const name = initInput?.value.trim();
     if (!name) return;
-    const hp = (initHPInput?.value || '').trim() || '0';
-    const row = createInitRow(name, type, hp);
-    initList.appendChild(row);
+    const type = typeSelect?.value || 'hero';
+    let hpValue = Number(initHPInput?.value) || 0;
+    let acValue = '';
+    if (type === 'monster') {
+      if (!selectedMonster) return;
+      hpValue = Number(selectedMonster.hp) || hpValue;
+      acValue = selectedMonster.ac || '';
+    }
+    const row = createInitRow(name, type, hpValue, acValue);
+    initList?.appendChild(row);
     initInput.value = '';
-    if (initHPInput) initHPInput.value = '';
+    if (type === 'monster') {
+      initHPInput.value = hpValue;
+      clearMonsterSelection();
+      acInput.value = '';
+    } else {
+      initHPInput.value = '';
+    }
     initInput.focus();
   }
 
@@ -364,40 +443,27 @@ document.addEventListener('DOMContentLoaded', () => {
     initInput?.focus();
   }
 
-  function addDragHandlers(li) {
-    li.addEventListener('dragstart', (e) => {
-      draggedItem = li;
-      li.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', li.querySelector('.init-name')?.textContent || '');
-    });
-    li.addEventListener('dragend', () => {
-      li.classList.remove('dragging');
-      draggedItem = null;
-    });
+  function handleNameInput() {
+    if (typeSelect?.value !== 'monster') return;
+    const term = (initInput.value || '').trim();
+    if (!term) {
+      clearMonsterSelection();
+      return;
+    }
+    selectedMonster = null;
+    acInput.value = '';
+    updateSuggestions(term);
   }
 
-  function getDragAfterElement(container, y) {
-    const items = [...container.querySelectorAll('.init-item:not(.dragging)')];
-    return items.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset, element: child };
-      }
-      return closest;
-    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
-  }
-
-  initHero?.addEventListener('click', () => addInitiative('hero'));
-  initMonster?.addEventListener('click', () => addInitiative('monster'));
+  initAdd?.addEventListener('click', addInitiative);
   initClear?.addEventListener('click', clearInitiative);
   initInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addInitiative('hero');
+      addInitiative();
     }
   });
+  initInput?.addEventListener('input', handleNameInput);
 
   initList?.addEventListener('dragover', (e) => {
     e.preventDefault();
