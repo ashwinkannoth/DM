@@ -49,16 +49,7 @@
   }));
   let filtered = dataset.slice();
 
-  const dictionary = Array.from(
-    new Set(
-      dataset.flatMap((monster) => [
-        monster.name,
-        monster.type,
-        monster.align_label,
-        monster.align
-      ].filter(Boolean))
-    )
-  ).map((value) => value.toLowerCase());
+  const names = dataset.map((monster) => monster.name.toLowerCase());
 
   function token(value) {
     if (value === undefined || value === null) return '';
@@ -88,7 +79,7 @@
     const normalized = term.toLowerCase();
     let best = '';
     let bestDist = Infinity;
-    dictionary.forEach((entry) => {
+    names.forEach((entry) => {
       const distance = levenshtein(normalized, entry);
       if (distance < bestDist) {
         bestDist = distance;
@@ -145,15 +136,9 @@
     const term = (searchInput.value || '').trim().toLowerCase();
     filtered = dataset.filter((monster) => {
       if (!term) return true;
-      return columns.some((field) =>
-        token(monster[field]).toString().includes(term)
-      );
+      return monster.name.toLowerCase().includes(term);
     });
-    if (term && filtered.length === 0) {
-      updateSuggestion(term);
-    } else {
-      updateSuggestion('');
-    }
+    updateSuggestion(term && filtered.length === 0 ? term : '');
     sortAndRender();
   }
 
