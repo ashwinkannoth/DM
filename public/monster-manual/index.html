@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Monster Manual</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+      body{margin:0;background:#0b1220;color:#f6fbff;font-family:'Inter',system-ui,sans-serif;}
+      .manual-shell{min-height:100vh;padding:32px;background:linear-gradient(180deg,#05070f,#0b1220);}
+      .manual-card{max-width:1200px;margin:0 auto;background:rgba(17,27,46,0.95);border:1px solid rgba(255,255,255,0.08);border-radius:18px;padding:28px 36px;box-shadow:0 20px 60px rgba(2,6,18,0.7);}
+      h1{margin:0 0 12px;font-size:2rem;text-align:center;}
+      .manual-controls{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-bottom:16px;}
+      .manual-controls input{flex:1 1 360px;padding:0.6rem 0.9rem;border-radius:12px;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.04);color:#f6fbff;}
+      .manual-table{width:100%;border-collapse:collapse;font-size:0.95rem;}
+      .manual-table thead th{cursor:pointer;padding:12px 10px;text-transform:uppercase;font-size:0.75rem;letter-spacing:0.2em;border-bottom:1px solid rgba(255,255,255,0.08);color:var(--muted);}
+      .manual-table tbody tr{border-bottom:1px solid rgba(255,255,255,0.05);}
+      .manual-table tbody tr:last-child{border-bottom:none;}
+      .manual-table td{padding:10px 8px;text-align:center;color:#e3ebf3;}
+      .manual-table tbody tr:nth-child(odd){background:rgba(255,255,255,0.01);}
+      .manual-legend{margin-top:12px;font-size:0.8rem;color:var(--muted);text-align:center;}
+      .sort-indicator{margin-left:4px;font-size:0.65rem;}
+      @media(max-width:960px){.manual-table thead th{font-size:0.65rem;}.manual-table tbody td,.manual-controls{flex-direction:column;}}
+    </style>
+  </head>
+  <body>
+    <div class="manual-shell">
+      <div class="manual-card">
+        <h1>Monster Manual</h1>
+        <p class="manual-legend">Search / filter and click any column header to sort. Data includes AC, HP, Speed, stats, and Challenge Rating.</p>
+        <div class="manual-controls">
+          <input id="monsterSearch" placeholder="Search monsters, types, alignments, etc." />
+          <div id="manualStatus" style="font-size:0.85rem;color:var(--muted);"></div>
+        </div>
+        <div style="overflow:auto;">
+          <table class="manual-table" id="monsterTable">
+            <thead>
+              <tr>
+                <th data-field="name">Name<span class="sort-indicator"></span></th>
+                <th data-field="size">Size<span class="sort-indicator"></span></th>
+                <th data-field="type">Type<span class="sort-indicator"></span></th>
+                <th data-field="align">Align<span class="sort-indicator"></span></th>
+                <th data-field="ac">AC<span class="sort-indicator"></span></th>
+                <th data-field="hp">HP<span class="sort-indicator"></span></th>
+                <th data-field="speeds">Speeds<span class="sort-indicator"></span></th>
+                <th data-field="str">STR<span class="sort-indicator"></span></th>
+                <th data-field="dex">DEX<span class="sort-indicator"></span></th>
+                <th data-field="con">CON<span class="sort-indicator"></span></th>
+                <th data-field="int">INT<span class="sort-indicator"></span></th>
+                <th data-field="wis">WIS<span class="sort-indicator"></span></th>
+                <th data-field="cha">CHA<span class="sort-indicator"></span></th>
+                <th data-field="cr">CR<span class="sort-indicator"></span></th>
+                <th data-field="sav_throws">Saves<span class="sort-indicator"></span></th>
+                <th data-field="skills">Skills<span class="sort-indicator"></span></th>
+                <th data-field="senses">Senses<span class="sort-indicator"></span></th>
+                <th data-field="languages">Languages<span class="sort-indicator"></span></th>
+                <th data-field="additional">Traits<span class="sort-indicator"></span></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script src="/monster-manual/monsters.js"></script>
+    <script src="/monster-manual/monster-manual.js"></script>
+  </body>
+</html>
