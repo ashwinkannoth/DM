@@ -1,8 +1,6 @@
 const buttons = document.querySelectorAll('.dice-buttons button');
 const resultNode = document.getElementById('diceResult');
 const visual = document.getElementById('diceVisual');
-const spark = document.getElementById('diceSpark');
-const visualValue = document.getElementById('diceVisualValue');
 
 const sidesMap = {
   d4: 4,
@@ -15,30 +13,20 @@ const sidesMap = {
 };
 
 let rolling = false;
-let rollTimer;
 
 function randomBetween(max) {
   return Math.floor(Math.random() * max) + 1;
 }
 
 function startRollAnimation() {
-  if (!visual || !spark) return;
+  if (!visual) return;
   rolling = true;
   visual.classList.add('rolling');
-  spark.classList.add('active');
-  clearInterval(rollTimer);
-  rollTimer = setInterval(() => {
-    const temp = randomBetween(20);
-    visualValue.textContent = temp;
-  }, 80);
 }
 
 function endRollAnimation(finalValue) {
   rolling = false;
   visual.classList.remove('rolling');
-  spark.classList.remove('active');
-  clearInterval(rollTimer);
-  visualValue.textContent = finalValue;
 }
 
 function roll(type) {
@@ -48,7 +36,7 @@ function roll(type) {
   setTimeout(() => {
     const result = randomBetween(sides);
     endRollAnimation(result);
-    resultNode.textContent = `Result: ${result} (${type.toUpperCase()})`;
+    resultNode.textContent = `Result: ${result}`;
   }, 900);
 }
 

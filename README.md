@@ -1,13 +1,13 @@
 # Dungeon Master Assistant
 
-A spellbook for ambience that stays on your own lair. Drop your curated tracks into `music/`, spin up the server, and the Assistant lets you cue cinematic beds, mood effects, and live tweaks without leaving the table.
+An ambient command post for tabletop sessions—curate cinematic soundscapes, drop in reactive effects, and keep the mood tethered to the table.
 
 ## Features
 - Cinematic themes to anchor combat, exploration, or downtime moments.
 - Adaptive effects that you can fire and mute with a single tap.
 - Crossfades, pauses, and a global volume charm so the soundtrack flows with the scene.
 - Runs locally (Node + Express) so you can host a session anywhere without juggling cloud latency.
-- 3D dice roller panel that loads GLB models from the `dice/` folder and lets you roll every polyhedral type.
+- Dice roller panel for D4, D6, D8, D10, D12, D20, and D100 with a vivid animation cue.
 
 ## Quick startup
 ```bash
@@ -28,8 +28,8 @@ curl http://localhost:3000/tracks
 ```
 
 ## Dice panel
-- Quick random rolls for D4, D6, D8, D10, D12, D20, and D100 with a simple animated shimmer.
-- Results appear in a live status readout; everything runs locally with no external assets required.
+- Roll D4–D100 instantly; a glowing card simulates the dice burst while the result text updates.
+- Everything runs locally—no external assets or libraries are required.
 
 ## Running notes
 - Ctrl-C ends the server when you run `npm start`.

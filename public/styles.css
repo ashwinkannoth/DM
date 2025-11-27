@@ -82,11 +82,12 @@ h1{
 .controls button{
   background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
   border:1px solid rgba(255,255,255,0.08);
-  padding:0.55rem 0.95rem;
+  padding:0.45rem 0.8rem;
   border-radius:999px;
   color:var(--text);
   font-weight:700;
   box-shadow: 0 12px 30px rgba(4,8,18,0.45);
+  font-size:0.95rem;
 }
 .controls .vol input{ vertical-align:middle; }
 .tracks{ display:block; gap:20px; padding:8px 0 0; }
@@ -113,17 +114,18 @@ h1{
 }
 .trackGroup{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.35rem; }
 .trackItem{ width:100%; }
-.trackItem button{
-  width:100%;
-  text-align:left;
-  padding:0.65rem 0.95rem;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,0.08);
-  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005));
-  color:var(--text);
-  cursor:pointer;
-  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-}
+	.trackItem button{
+	  width:100%;
+	  text-align:center;
+	  padding:0.55rem 0.7rem;
+	  border-radius:12px;
+	  border:1px solid rgba(255,255,255,0.08);
+	  background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005));
+	  color:var(--text);
+	  cursor:pointer;
+	  font-size:0.95rem;
+	  transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+	}
 .trackItem button:hover{
   transform: translateY(-3px);
   box-shadow: 0 18px 45px rgba(1,3,14,0.6);
@@ -185,6 +187,35 @@ h1{
   text-transform:uppercase;
   letter-spacing:0.12em;
 }
+.dice-roll-visual{
+  height:140px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.3rem;
+  letter-spacing:0.3em;
+  text-transform:uppercase;
+  position:relative;
+  overflow:hidden;
+}
+.dice-roll-visual::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background: linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0));
+  opacity:0;
+  transition:opacity 0.4s ease;
+}
+.dice-roll-visual.rolling::after{
+  opacity:1;
+  animation: shimmer 1s linear infinite;
+}
+.dice-roll-visual span{
+  z-index:1;
+}
 .dice-controls{
   display:flex;
   flex-direction:column;
@@ -219,6 +250,15 @@ h1{
   background: rgba(255,255,255,0.04);
   border:1px solid rgba(255,255,255,0.06);
   font-weight:600;
+}
+
+.dice-roll-visual.rolling::after{
+  animation: shimmer 1s linear infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .initiative{
