@@ -1,6 +1,6 @@
 const buttons = document.querySelectorAll('.dice-buttons button');
-const resultNode = document.getElementById('diceResult');
 const visual = document.getElementById('diceVisual');
+const visualValue = document.getElementById('diceVisualValue');
 
 const sidesMap = {
   d4: 4,
@@ -27,6 +27,7 @@ function startRollAnimation() {
 function endRollAnimation(finalValue) {
   rolling = false;
   visual.classList.remove('rolling');
+  if (visualValue) visualValue.textContent = `Result: ${finalValue}`;
 }
 
 function roll(type) {
@@ -36,7 +37,6 @@ function roll(type) {
   setTimeout(() => {
     const result = randomBetween(sides);
     endRollAnimation(result);
-    resultNode.textContent = `Result: ${result}`;
   }, 900);
 }
 
