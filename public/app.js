@@ -198,16 +198,15 @@ document.addEventListener('DOMContentLoaded', () => {
     activeEffects.forEach(({ audio }) => { try { audio.volume = v; } catch (err) {} });
   });
 
-    // Initiative Tracker logic
-  const typeSelect = document.getElementById('initType');
-  const heroACInput = document.getElementById('initHeroAC');
+  // Initiative Tracker logic
   const heroACWrapper = document.getElementById('heroACWrapper');
   const monsterACWrapper = document.getElementById('monsterACWrapper');
   const monsterACValue = document.getElementById('monsterACValue');
+  const heroACInput = document.getElementById('initHeroAC');
   const initInput = document.getElementById('initName');
   const initHPInput = document.getElementById('initHP');
-  const initAdd = document.getElementById('initAdd');
-  const monsterSuggestions = document.getElementById('monsterSuggestions');
+  const initAddHero = document.getElementById('initAddHero');
+  const initAddMonster = document.getElementById('initAddMonster');
   const initClear = document.getElementById('initClear');
   const initList = document.getElementById('initList');
   let draggedItem = null;
@@ -218,63 +217,6 @@ document.addEventListener('DOMContentLoaded', () => {
     hp: monster.hp,
     ac: monster.ac,
   }));
-  let selectedMonster = null;
-
-  function showTypeUI() {
-    if (typeSelect?.value === 'monster') {
-      heroACWrapper.style.display = 'none';
-      monsterACWrapper.style.display = 'flex';
-      monsterACValue.textContent = 'AC —';
-      heroACInput.value = '';
-      initHPInput.value = '';
-      selectedMonster = null;
-    } else {
-      heroACWrapper.style.display = 'flex';
-      monsterACWrapper.style.display = 'none';
-      monsterACValue.textContent = 'AC —';
-      selectedMonster = null;
-    }
-    if (monsterSuggestions) {
-      monsterSuggestions.innerHTML = '';
-      monsterSuggestions.style.display = 'none';
-    }
-  }
-
-  function updateSuggestions(term) {
-    if (typeSelect?.value !== 'monster' || !term) {
-      if (monsterSuggestions) {
-        monsterSuggestions.innerHTML = '';
-        monsterSuggestions.style.display = 'none';
-      }
-      return;
-    }
-    const matches = monstersIndex
-      .filter((m) => m.nameLower.includes(term.toLowerCase()))
-      .slice(0, 6);
-    if (!monsterSuggestions) return;
-    if (matches.length === 0) {
-      monsterSuggestions.innerHTML = '<li>No matches</li>';
-      monsterSuggestions.style.display = 'flex';
-      return;
-    }
-    monsterSuggestions.innerHTML = matches
-      .map((m) => `<li data-name="${m.name}">${m.name}</li>`)
-      .join('');
-    monsterSuggestions.style.display = 'flex';
-  }
-
-  monsterSuggestions?.addEventListener('click', (event) => {
-    const li = event.target.closest('li');
-    if (!li || typeSelect?.value !== 'monster') return;
-    const match = monstersIndex.find((m) => m.name === li.dataset.name);
-    if (!match) return;
-    selectedMonster = match;
-    initInput.value = match.name;
-    initHPInput.value = match.hp;
-    monsterACValue.textContent = match.ac ? `AC ${match.ac}` : 'AC —';
-    monsterSuggestions.innerHTML = '';
-    monsterSuggestions.style.display = 'none';
-  });
 
   function createInitRow(name, type, hp, acValue = '') {
     const li = document.createElement('li');
@@ -418,34 +360,42 @@ document.addEventListener('DOMContentLoaded', () => {
     setHP(li, hpInput, next);
   }
 
-  function addInitiative() {
+  function addHero() {
     const name = initInput?.value.trim();
     if (!name) return;
-    const type = typeSelect?.value || 'hero';
-    let hpValue = Number(initHPInput?.value) || 0;
-    let acValue = '';
-    if (type === 'monster') {
-      if (!selectedMonster) return;
-      hpValue = Number(selectedMonster.hp) || hpValue;
-      acValue = selectedMonster.ac || '';
-    } else {
-      acValue = heroACInput?.value || '';
-    }
-    const row = createInitRow(name, type, hpValue, acValue);
+    const hpValue = Number(initHPInput?.value) || 0;
+    const acValue = heroACInput?.value || '';
+    const row = createInitRow(name, 'hero', hpValue, acValue);
     initList?.appendChild(row);
     initInput.value = '';
     initHPInput.value = '';
-    if (type === 'monster') {
-      selectedMonster = null;
-      monsterACValue.textContent = 'AC —';
-    } else if (heroACInput) {
-      heroACInput.value = '';
-    }
-    if (monsterSuggestions) {
-      monsterSuggestions.innerHTML = '';
-      monsterSuggestions.style.display = 'none';
-    }
+    if (heroACInput) heroACInput.value = '';
     initInput.focus();
+  }
+
+  function addMonster() {
+    const prefix = prompt('Enter monster name (prefix matches from start):');
+    if (!prefix) return;
+    const term = prefix.trim().toLowerCase();
+    const matches = monstersIndex.filter((m) => m.nameLower.startsWith(term));
+    if (matches.length === 0) {
+      alert('No monsters match that prefix');
+      return;
+    }
+    let picked = matches[0];
+    if (matches.length > 1) {
+      const list = matches
+        .slice(0, 10)
+        .map((m, i) => `${i + 1}. ${m.name}`)
+        .join('\\n');
+      const choice = prompt(`Multiple matches found:\\n${list}\\nType the number to pick`);
+      const idx = Number(choice) - 1;
+      if (Number.isFinite(idx) && idx >= 0 && idx < matches.length) {
+        picked = matches[idx];
+      }
+    }
+    const row = createInitRow(picked.name, 'monster', picked.hp, picked.ac);
+    initList?.appendChild(row);
   }
 
   function clearInitiative() {
@@ -453,6 +403,38 @@ document.addEventListener('DOMContentLoaded', () => {
     initList.querySelectorAll('.init-item[data-type="monster"]').forEach((li) => li.remove());
     initInput?.focus();
   }
+
+  function addDragHandlers(li) {
+    li.addEventListener('dragstart', (e) => {
+      draggedItem = li;
+      li.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', li.querySelector('.init-name')?.textContent || '');
+    });
+    li.addEventListener('dragend', () => {
+      li.classList.remove('dragging');
+      draggedItem = null;
+    });
+  }
+
+  function getDragAfterElement(container, y) {
+    const items = [...container.querySelectorAll('.init-item:not(.dragging)')];
+    return items.reduce((closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      }
+      return closest;
+    }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
+  }
+
+  if (heroACWrapper) heroACWrapper.style.display = 'flex';
+  if (monsterACWrapper) monsterACWrapper.style.display = 'none';
+
+  initAddHero?.addEventListener('click', addHero);
+  initAddMonster?.addEventListener('click', addMonster);
+  initClear?.addEventListener('click', clearInitiative);
   initList?.addEventListener('dragover', (e) => {
     e.preventDefault();
     const afterElement = getDragAfterElement(initList, e.clientY);
