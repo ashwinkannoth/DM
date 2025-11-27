@@ -1,14 +1,30 @@
 (() => {
+  const ALIGNMENT_MAP = {
+    LG: 'Lawful Good',
+    NG: 'Neutral Good',
+    CG: 'Chaotic Good',
+    LN: 'Lawful Neutral',
+    N: 'True Neutral',
+    CN: 'Chaotic Neutral',
+    LE: 'Lawful Evil',
+    NE: 'Neutral Evil',
+    CE: 'Chaotic Evil',
+    U: 'Unaligned',
+    ANY: 'Any Alignment',
+    'ANY EVIL': 'Any Evil Alignment'
+  };
+
   const tableBody = document.querySelector('#monsterTable tbody');
   const headers = document.querySelectorAll('#monsterTable thead th');
   const searchInput = document.getElementById('monsterSearch');
   const status = document.getElementById('manualStatus');
+  const suggestionNode = document.getElementById('manualSuggestion');
 
   const columns = [
     'name',
     'size',
     'type',
-    'align',
+    'align_label',
     'ac',
     'hp',
     'speeds',
@@ -27,8 +43,22 @@
   ];
 
   let currentSort = { field: 'cr', direction: -1 };
-  const dataset = window.MONSTERS || [];
+  const dataset = (window.MONSTERS || []).map((monster) => ({
+    ...monster,
+    align_label: ALIGNMENT_MAP[monster.align] || monster.align
+  }));
   let filtered = dataset.slice();
+
+  const dictionary = Array.from(
+    new Set(
+      dataset.flatMap((monster) => [
+        monster.name,
+        monster.type,
+        monster.align_label,
+        monster.align
+      ].filter(Boolean))
+    )
+  ).map((value) => value.toLowerCase());
 
   function token(value) {
     if (value === undefined || value === null) return '';
@@ -36,19 +66,39 @@
     return String(value).toLowerCase();
   }
 
-  function compareBy(field, direction, a, b) {
-    const rawA = a[field];
-    const rawB = b[field];
-    const aNum = typeof rawA === 'number' ? rawA : parseFloat(rawA);
-    const bNum = typeof rawB === 'number' ? rawB : parseFloat(rawB);
-    if (!Number.isNaN(aNum) && !Number.isNaN(bNum)) {
-      return (aNum - bNum) * direction;
+  function levenshtein(a, b) {
+    const matrix = Array.from({ length: b.length + 1 }, () => []);
+    for (let i = 0; i <= a.length; i += 1) matrix[0][i] = i;
+    for (let j = 0; j <= b.length; j += 1) matrix[j][0] = j;
+    for (let j = 1; j <= b.length; j += 1) {
+      for (let i = 1; i <= a.length; i += 1) {
+        const indicator = a[i - 1] === b[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i] + 1,
+          matrix[j - 1][i - 1] + indicator
+        );
+      }
     }
-    const av = token(rawA);
-    const bv = token(rawB);
-    if (av < bv) return -1 * direction;
-    if (av > bv) return 1 * direction;
-    return 0;
+    return matrix[b.length][a.length];
+  }
+
+  function bestSuggestion(term) {
+    if (!term) return '';
+    const normalized = term.toLowerCase();
+    let best = '';
+    let bestDist = Infinity;
+    dictionary.forEach((entry) => {
+      const distance = levenshtein(normalized, entry);
+      if (distance < bestDist) {
+        bestDist = distance;
+        best = entry;
+      }
+    });
+    if (bestDist <= Math.max(1, normalized.length * 0.4) && best !== normalized) {
+      return best;
+    }
+    return '';
   }
 
   function renderTable(rows) {
@@ -61,15 +111,15 @@
     status.textContent = `Showing ${rows.length} of ${dataset.length} creatures`;
   }
 
-  function applyFilters() {
-    const term = (searchInput.value || '').trim().toLowerCase();
-    filtered = dataset.filter((monster) => {
-      if (!term) return true;
-      return columns.some((field) =>
-        token(monster[field]).includes(term)
-      );
-    });
-    sortAndRender();
+  function compareBy(field, direction, a, b) {
+    const av = token(a[field]);
+    const bv = token(b[field]);
+    if (typeof av === 'number' && typeof bv === 'number') {
+      return (av - bv) * direction;
+    }
+    if (av < bv) return -1 * direction;
+    if (av > bv) return 1 * direction;
+    return 0;
   }
 
   function sortAndRender() {
@@ -80,12 +130,31 @@
     headers.forEach((th) => {
       const indicator = th.querySelector('.sort-indicator');
       if (!indicator) return;
-      if (th.dataset.field === currentSort.field) {
-        indicator.textContent = currentSort.direction === 1 ? '▲' : '▼';
-      } else {
-        indicator.textContent = '';
-      }
+      indicator.textContent = th.dataset.field === currentSort.field
+        ? (currentSort.direction === 1 ? '▲' : '▼')
+        : '';
     });
+  }
+
+  function updateSuggestion(term) {
+    const suggestion = bestSuggestion(term);
+    suggestionNode.textContent = suggestion ? `Did you mean "${suggestion}"?` : '';
+  }
+
+  function applyFilters() {
+    const term = (searchInput.value || '').trim().toLowerCase();
+    filtered = dataset.filter((monster) => {
+      if (!term) return true;
+      return columns.some((field) =>
+        token(monster[field]).toString().includes(term)
+      );
+    });
+    if (term && filtered.length === 0) {
+      updateSuggestion(term);
+    } else {
+      updateSuggestion('');
+    }
+    sortAndRender();
   }
 
   headers.forEach((th) => {
@@ -102,7 +171,7 @@
     });
   });
 
-  searchInput.addEventListener('input', () => applyFilters());
+  searchInput.addEventListener('input', applyFilters);
 
   applyFilters();
 })();

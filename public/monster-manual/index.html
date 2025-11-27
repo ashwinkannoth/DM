@@ -20,6 +20,8 @@
       .manual-table tbody tr:nth-child(odd){background:rgba(255,255,255,0.01);}
       .manual-legend{margin-top:12px;font-size:0.8rem;color:var(--muted);text-align:center;}
       .sort-indicator{margin-left:4px;font-size:0.65rem;}
+      .manual-suggestion{min-height:1.2rem;color:#f8d67c;font-size:0.9rem;margin-bottom:8px;}
+      .manual-legend-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:6px;margin-bottom:12px;font-size:0.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;}
       @media(max-width:960px){.manual-table thead th{font-size:0.65rem;}.manual-table tbody td,.manual-controls{flex-direction:column;}}
     </style>
   </head>
@@ -27,10 +29,26 @@
     <div class="manual-shell">
       <div class="manual-card">
         <h1>Monster Manual</h1>
-        <p class="manual-legend">Search / filter and click any column header to sort. Data includes AC, HP, Speed, stats, and Challenge Rating.</p>
+        <p class="manual-legend">Search / filter and click any column header to sort. Data includes AC, HP, speeds, stats, challenge rating, saves, skills, senses, and languages.</p>
         <div class="manual-controls">
           <input id="monsterSearch" placeholder="Search monsters, types, alignments, etc." />
           <div id="manualStatus" style="font-size:0.85rem;color:var(--muted);"></div>
+        </div>
+        <div class="manual-suggestion" id="manualSuggestion"></div>
+        <div class="manual-legend-grid">
+          <strong>Alignment mapping:</strong>
+          <div>LG = Lawful Good</div>
+          <div>NG = Neutral Good</div>
+          <div>CG = Chaotic Good</div>
+          <div>LN = Lawful Neutral</div>
+          <div>N = True Neutral</div>
+          <div>CN = Chaotic Neutral</div>
+          <div>LE = Lawful Evil</div>
+          <div>NE = Neutral Evil</div>
+          <div>CE = Chaotic Evil</div>
+          <div>U = Unaligned</div>
+          <div>ANY = Any Alignment</div>
+          <div>ANY EVIL = Any Evil Alignment</div>
         </div>
         <div style="overflow:auto;">
           <table class="manual-table" id="monsterTable">
@@ -39,7 +57,7 @@
                 <th data-field="name">Name<span class="sort-indicator"></span></th>
                 <th data-field="size">Size<span class="sort-indicator"></span></th>
                 <th data-field="type">Type<span class="sort-indicator"></span></th>
-                <th data-field="align">Align<span class="sort-indicator"></span></th>
+                <th data-field="align_label">Alignment<span class="sort-indicator"></span></th>
                 <th data-field="ac">AC<span class="sort-indicator"></span></th>
                 <th data-field="hp">HP<span class="sort-indicator"></span></th>
                 <th data-field="speeds">Speeds<span class="sort-indicator"></span></th>
