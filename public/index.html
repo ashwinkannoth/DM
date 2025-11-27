@@ -66,10 +66,14 @@
                       <option value="monster">Monster</option>
                     </select>
                   </label>
-                  <label class="init-label">
-                    AC
-                    <input id="initAC" type="number" value="" disabled />
+                  <label class="init-label" id="heroACWrapper">
+                    Hero AC
+                    <input id="initHeroAC" type="number" min="0" value="" />
                   </label>
+                  <div class="init-label monster-ac-display" id="monsterACWrapper" style="display:none;">
+                    Monster AC
+                    <div id="monsterACValue">—</div>
+                  </div>
                 </div>
                 <input id="initName" type="text" placeholder="Name a hero or monster" autocomplete="off" />
                 <ul id="monsterSuggestions" class="monster-suggestions" aria-live="polite" role="listbox"></ul>

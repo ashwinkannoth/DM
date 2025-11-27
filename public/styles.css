@@ -75,6 +75,8 @@ h1{
   font-size:0.85rem;
   color:var(--accent);
 }
+.hero-foot{ text-align:center; margin:12px 0 8px; }
+.hero-link{ color:var(--accent); font-weight:700; text-decoration:none; }
 #player{ display:block; height:48px; width:100%; }
 .player{ margin-bottom:1.4rem; }
 .playerRow{ display:flex; gap:0.8rem; align-items:center; flex-wrap:wrap; justify-content:center; }
@@ -303,6 +305,13 @@ h1{
   text-transform:uppercase;
   font-weight:600;
   gap:0.25rem;
+}
+.monster-ac-display{
+  min-width:120px;
+  background: rgba(255,255,255,0.03);
+  border-radius:10px;
+  padding:0.35rem 0.6rem;
+  border:1px solid rgba(255,255,255,0.08);
 }
 .init-actions input{
   background: rgba(255,255,255,0.06);

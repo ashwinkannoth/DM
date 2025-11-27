@@ -198,9 +198,12 @@ document.addEventListener('DOMContentLoaded', () => {
     activeEffects.forEach(({ audio }) => { try { audio.volume = v; } catch (err) {} });
   });
 
-  // Initiative Tracker logic
+    // Initiative Tracker logic
   const typeSelect = document.getElementById('initType');
-  const acInput = document.getElementById('initAC');
+  const heroACInput = document.getElementById('initHeroAC');
+  const heroACWrapper = document.getElementById('heroACWrapper');
+  const monsterACWrapper = document.getElementById('monsterACWrapper');
+  const monsterACValue = document.getElementById('monsterACValue');
   const initInput = document.getElementById('initName');
   const initHPInput = document.getElementById('initHP');
   const initAdd = document.getElementById('initAdd');
@@ -213,49 +216,52 @@ document.addEventListener('DOMContentLoaded', () => {
     name: monster.name,
     nameLower: monster.name.toLowerCase(),
     hp: monster.hp,
-    ac: monster.ac
+    ac: monster.ac,
   }));
   let selectedMonster = null;
 
-  function updateSuggestions(term) {
-    if (typeSelect?.value !== 'monster' || !term) {
-      monsterSuggestions.innerHTML = '';
-      if (monsterSuggestions) monsterSuggestions.style.display = 'none';
-      return;
+  function showTypeUI() {
+    if (typeSelect?.value === 'monster') {
+      heroACWrapper.style.display = 'none';
+      monsterACWrapper.style.display = 'flex';
+      monsterACValue.textContent = 'AC —';
+      heroACInput.value = '';
+      initHPInput.value = '';
+      selectedMonster = null;
+    } else {
+      heroACWrapper.style.display = 'flex';
+      monsterACWrapper.style.display = 'none';
+      monsterACValue.textContent = 'AC —';
+      selectedMonster = null;
     }
-    const matches = monstersIndex
-      .filter((m) => m.nameLower.includes(term.toLowerCase()))
-      .slice(0, 6);
-    if (monsterSuggestions) {
-      if (matches.length === 0) {
-        monsterSuggestions.innerHTML = '<li>No matches</li>';
-        monsterSuggestions.style.display = 'flex';
-        return;
-      }
-      monsterSuggestions.innerHTML = matches
-        .map((m) => `<li data-name="${m.name}">${m.name}</li>`)
-        .join('');
-      monsterSuggestions.style.display = 'flex';
-    }
-  }
-
-  function clearMonsterSelection() {
-    selectedMonster = null;
-    acInput.value = '';
     if (monsterSuggestions) {
       monsterSuggestions.innerHTML = '';
       monsterSuggestions.style.display = 'none';
     }
   }
 
-  typeSelect?.addEventListener('change', () => {
-    if (typeSelect.value !== 'monster') {
-      clearMonsterSelection();
-      initHPInput.value = '';
-      acInput.value = '';
+  function updateSuggestions(term) {
+    if (typeSelect?.value !== 'monster' || !term) {
+      if (monsterSuggestions) {
+        monsterSuggestions.innerHTML = '';
+        monsterSuggestions.style.display = 'none';
+      }
+      return;
     }
-    initInput.value = '';
-  });
+    const matches = monstersIndex
+      .filter((m) => m.nameLower.includes(term.toLowerCase()))
+      .slice(0, 6);
+    if (!monsterSuggestions) return;
+    if (matches.length === 0) {
+      monsterSuggestions.innerHTML = '<li>No matches</li>';
+      monsterSuggestions.style.display = 'flex';
+      return;
+    }
+    monsterSuggestions.innerHTML = matches
+      .map((m) => `<li data-name="${m.name}">${m.name}</li>`)
+      .join('');
+    monsterSuggestions.style.display = 'flex';
+  }
 
   monsterSuggestions?.addEventListener('click', (event) => {
     const li = event.target.closest('li');
@@ -265,12 +271,12 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedMonster = match;
     initInput.value = match.name;
     initHPInput.value = match.hp;
-    acInput.value = match.ac;
+    monsterACValue.textContent = match.ac ? `AC ${match.ac}` : 'AC —';
     monsterSuggestions.innerHTML = '';
     monsterSuggestions.style.display = 'none';
   });
 
-  function createInitRow(name, type, hp, ac = '') {
+  function createInitRow(name, type, hp, acValue = '') {
     const li = document.createElement('li');
     li.className = 'init-item';
     li.dataset.type = type;
@@ -293,7 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const acBadge = document.createElement('span');
     acBadge.className = 'init-ac-badge';
-    acBadge.textContent = ac ? `AC ${ac}` : 'AC —';
+    acBadge.textContent = acValue ? `AC ${acValue}` : 'AC —';
 
     const hpControls = document.createElement('div');
     hpControls.className = 'hp-controls';
@@ -394,7 +400,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (/^[0-9+\-*/().\s]+$/.test(trimmed)) {
       try {
-        // eslint-disable-next-line no-new-func
         const val = Function(`"use strict"; return (${trimmed});`)();
         if (Number.isFinite(val)) return val;
       } catch (err) {
@@ -423,16 +428,22 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!selectedMonster) return;
       hpValue = Number(selectedMonster.hp) || hpValue;
       acValue = selectedMonster.ac || '';
+    } else {
+      acValue = heroACInput?.value || '';
     }
     const row = createInitRow(name, type, hpValue, acValue);
     initList?.appendChild(row);
     initInput.value = '';
+    initHPInput.value = '';
     if (type === 'monster') {
-      initHPInput.value = hpValue;
-      clearMonsterSelection();
-      acInput.value = '';
-    } else {
-      initHPInput.value = '';
+      selectedMonster = null;
+      monsterACValue.textContent = 'AC —';
+    } else if (heroACInput) {
+      heroACInput.value = '';
+    }
+    if (monsterSuggestions) {
+      monsterSuggestions.innerHTML = '';
+      monsterSuggestions.style.display = 'none';
     }
     initInput.focus();
   }
@@ -442,29 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initList.querySelectorAll('.init-item[data-type="monster"]').forEach((li) => li.remove());
     initInput?.focus();
   }
-
-  function handleNameInput() {
-    if (typeSelect?.value !== 'monster') return;
-    const term = (initInput.value || '').trim();
-    if (!term) {
-      clearMonsterSelection();
-      return;
-    }
-    selectedMonster = null;
-    acInput.value = '';
-    updateSuggestions(term);
-  }
-
-  initAdd?.addEventListener('click', addInitiative);
-  initClear?.addEventListener('click', clearInitiative);
-  initInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addInitiative();
-    }
-  });
-  initInput?.addEventListener('input', handleNameInput);
-
   initList?.addEventListener('dragover', (e) => {
     e.preventDefault();
     const afterElement = getDragAfterElement(initList, e.clientY);
