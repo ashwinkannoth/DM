@@ -199,24 +199,58 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Initiative Tracker logic
+  const typeRadios = document.querySelectorAll('input[name="initType"]');
   const heroACWrapper = document.getElementById('heroACWrapper');
   const monsterACWrapper = document.getElementById('monsterACWrapper');
   const monsterACValue = document.getElementById('monsterACValue');
   const heroACInput = document.getElementById('initHeroAC');
   const initInput = document.getElementById('initName');
   const initHPInput = document.getElementById('initHP');
-  const initAddHero = document.getElementById('initAddHero');
-  const initAddMonster = document.getElementById('initAddMonster');
+  const initAdd = document.getElementById('initAdd');
   const initClear = document.getElementById('initClear');
+  const monsterSuggestions = document.getElementById('monsterSuggestions');
   const initList = document.getElementById('initList');
   let draggedItem = null;
+  let selectedMonster = null;
 
-  const monstersIndex = (window.MONSTERS || []).map((monster) => ({
-    name: monster.name,
-    nameLower: monster.name.toLowerCase(),
-    hp: monster.hp,
-    ac: monster.ac,
-  }));
+  const monstersIndex = [];
+  const monsterDataPromise = window.fetchMonstersFromExcel ? window.fetchMonstersFromExcel() : Promise.resolve([]);
+  monsterDataPromise.then((data) => {
+    data.forEach((m) => {
+      const hpNum = Number(m.hp);
+      const acNum = Number(m.ac);
+      monstersIndex.push({
+        name: m.name,
+        nameLower: (m.name || '').toLowerCase(),
+        hp: Number.isFinite(hpNum) ? hpNum : m.hp,
+        ac: Number.isFinite(acNum) ? acNum : m.ac,
+      });
+    });
+  }).catch(() => {});
+
+  function currentType() {
+    const checked = [...typeRadios].find((r) => r.checked);
+    return checked ? checked.value : 'hero';
+  }
+
+  function renderTypeUI() {
+    const type = currentType();
+    if (type === 'monster') {
+      if (heroACWrapper) heroACWrapper.style.display = 'none';
+      if (monsterACWrapper) monsterACWrapper.style.display = 'flex';
+      monsterACValue.textContent = 'AC —';
+      if (heroACInput) heroACInput.value = '';
+    } else {
+      if (heroACWrapper) heroACWrapper.style.display = 'flex';
+      if (monsterACWrapper) monsterACWrapper.style.display = 'none';
+      monsterACValue.textContent = 'AC —';
+      selectedMonster = null;
+    }
+    if (monsterSuggestions) {
+      monsterSuggestions.innerHTML = '';
+      monsterSuggestions.style.display = 'none';
+    }
+  }
 
   function createInitRow(name, type, hp, acValue = '') {
     const li = document.createElement('li');
@@ -374,28 +408,23 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addMonster() {
-    const prefix = prompt('Enter monster name (prefix matches from start):');
-    if (!prefix) return;
-    const term = prefix.trim().toLowerCase();
+    const term = (initInput?.value || '').trim().toLowerCase();
+    if (!term) return;
     const matches = monstersIndex.filter((m) => m.nameLower.startsWith(term));
-    if (matches.length === 0) {
-      alert('No monsters match that prefix');
-      return;
-    }
-    let picked = matches[0];
-    if (matches.length > 1) {
-      const list = matches
-        .slice(0, 10)
-        .map((m, i) => `${i + 1}. ${m.name}`)
-        .join('\\n');
-      const choice = prompt(`Multiple matches found:\\n${list}\\nType the number to pick`);
-      const idx = Number(choice) - 1;
-      if (Number.isFinite(idx) && idx >= 0 && idx < matches.length) {
-        picked = matches[idx];
-      }
-    }
-    const row = createInitRow(picked.name, 'monster', picked.hp, picked.ac);
+    if (matches.length === 0) return;
+    const picked = matches[0];
+    const hpValue = Number(picked.hp) || 0;
+    const acValue = picked.ac || '';
+    const row = createInitRow(picked.name, 'monster', hpValue, acValue);
     initList?.appendChild(row);
+    initInput.value = '';
+    initHPInput.value = '';
+    monsterACValue.textContent = 'AC —';
+    selectedMonster = null;
+    if (monsterSuggestions) {
+      monsterSuggestions.innerHTML = '';
+      monsterSuggestions.style.display = 'none';
+    }
   }
 
   function clearInitiative() {
@@ -429,12 +458,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { offset: Number.NEGATIVE_INFINITY, element: null }).element;
   }
 
-  if (heroACWrapper) heroACWrapper.style.display = 'flex';
-  if (monsterACWrapper) monsterACWrapper.style.display = 'none';
+  typeRadios.forEach((radio) => radio.addEventListener('change', renderTypeUI));
 
-  initAddHero?.addEventListener('click', addHero);
-  initAddMonster?.addEventListener('click', addMonster);
+  initAdd?.addEventListener('click', () => {
+    if (currentType() === 'monster') addMonster();
+    else addHero();
+  });
   initClear?.addEventListener('click', clearInitiative);
+  initInput?.addEventListener('input', () => {
+    if (currentType() !== 'monster') return;
+    const term = initInput.value.trim();
+    if (!term) {
+      selectedMonster = null;
+      if (monsterSuggestions) {
+        monsterSuggestions.innerHTML = '';
+        monsterSuggestions.style.display = 'none';
+      }
+      return;
+    }
+    const matches = monstersIndex.filter((m) => m.nameLower.startsWith(term.toLowerCase())).slice(0, 8);
+    if (monsterSuggestions) {
+      if (matches.length === 0) {
+        monsterSuggestions.innerHTML = '<li>No matches</li>';
+        monsterSuggestions.style.display = 'flex';
+      } else {
+        monsterSuggestions.innerHTML = matches.map((m) => `<li data-name="${m.name}">${m.name}</li>`).join('');
+        monsterSuggestions.style.display = 'flex';
+      }
+    }
+  });
+
+  monsterSuggestions?.addEventListener('click', (e) => {
+    const li = e.target.closest('li');
+    if (!li) return;
+    const match = monstersIndex.find((m) => m.name === li.dataset.name);
+    if (!match) return;
+    selectedMonster = match;
+    initInput.value = match.name;
+    initHPInput.value = match.hp;
+    monsterACValue.textContent = match.ac ? `AC ${match.ac}` : 'AC —';
+    monsterSuggestions.innerHTML = '';
+    monsterSuggestions.style.display = 'none';
+  });
+
   initList?.addEventListener('dragover', (e) => {
     e.preventDefault();
     const afterElement = getDragAfterElement(initList, e.clientY);
@@ -450,7 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
   });
 
-  // initial state — load both lists and show page
+  renderTypeUI();
+// initial state — load both lists and show page
   showChooser(false);
   showTrackSection(true);
   loadBoth();

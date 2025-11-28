@@ -43,13 +43,24 @@
   ];
 
   let currentSort = { field: 'cr', direction: -1 };
-  const dataset = (window.MONSTERS || []).map((monster) => ({
-    ...monster,
-    align_label: ALIGNMENT_MAP[monster.align] || monster.align
-  }));
+  const dataset = [];
   let filtered = dataset.slice();
 
-  const names = dataset.map((monster) => monster.name.toLowerCase());
+
+  function loadData() {
+    if (!window.fetchMonstersFromExcel) return;
+    window.fetchMonstersFromExcel().then((data) => {
+      dataset.splice(0, dataset.length, ...data.map((monster) => ({
+        ...monster,
+        align_label: ALIGNMENT_MAP[monster.align] || monster.align
+      })));
+      filtered = dataset.slice();
+      applyFilters();
+    }).catch(() => {
+      status.textContent = 'Failed to load monster manual';
+    });
+  }
+
 
   function token(value) {
     if (value === undefined || value === null) return '';
@@ -79,7 +90,8 @@
     const normalized = term.toLowerCase();
     let best = '';
     let bestDist = Infinity;
-    names.forEach((entry) => {
+    dataset.forEach((monster) => {
+      const entry = (monster.name || '').toLowerCase();
       const distance = levenshtein(normalized, entry);
       if (distance < bestDist) {
         bestDist = distance;
@@ -158,5 +170,5 @@
 
   searchInput.addEventListener('input', applyFilters);
 
-  applyFilters();
+  loadData();
 })();

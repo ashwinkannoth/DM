@@ -17,7 +17,7 @@
           </div>
           <p class="description">Select themes for travel or combat, layer in effects, and let the initiative tracker keep turns and HP front-and-center.</p>
           <div class="hero-foot">
-            <a class="hero-link" href="/monster-manual/">Click here for a full Monster Manual.</a>
+            <a class="hero-link" href="/monstermanual/monstermanual.html">Click here for a full Monster Manual.</a>
           </div>
 
           <section id="controlsTop" class="chooser">
@@ -58,35 +58,31 @@
                 <p class="init-desc">Add heroes or foes, then drag to reorder when the battle shifts.</p>
               </div>
               <div class="init-actions">
-                <div class="init-panel">
-                  <label class="init-label">
-                    Type
-                    <select id="initType">
-                      <option value="hero">Hero</option>
-                      <option value="monster">Monster</option>
-                    </select>
-                  </label>
-                  <label class="init-label" id="heroACWrapper">
-                    Hero AC
-                    <input id="initHeroAC" type="number" min="0" value="" />
-                  </label>
-                  <div class="init-label monster-ac-display" id="monsterACWrapper" style="display:none;">
-                    Monster AC
-                    <div id="monsterACValue">—</div>
-                  </div>
-                </div>
-                <input id="initName" type="text" placeholder="Name a hero or monster" autocomplete="off" />
-                <ul id="monsterSuggestions" class="monster-suggestions" aria-live="polite" role="listbox"></ul>
-                <label class="init-hp-label">
-                  HP
-                  <input id="initHP" type="number" min="0" value="" />
-                </label>
-                <div class="init-add-buttons">
-                  <button id="initAddHero" type="button">Add Hero</button>
-                  <button id="initAddMonster" type="button">Add Monster</button>
-                  <button id="initClear" type="button" class="ghost">Clear</button>
-                </div>
+            <div class="init-panel">
+              <div class="init-type-toggle">
+                <label><input type="radio" name="initType" value="hero" checked> Hero</label>
+                <label><input type="radio" name="initType" value="monster"> Monster</label>
               </div>
+              <label class="init-label hero-only" id="heroACWrapper">
+                Hero AC
+                <input id="initHeroAC" type="number" min="0" value="" />
+              </label>
+              <div class="init-label monster-ac-display" id="monsterACWrapper" style="display:none;">
+                Monster AC
+                <div id="monsterACValue">AC —</div>
+              </div>
+            </div>
+            <input id="initName" type="text" placeholder="Name" autocomplete="off" />
+            <ul id="monsterSuggestions" class="monster-suggestions" aria-live="polite" role="listbox"></ul>
+            <label class="init-hp-label">
+              HP
+              <input id="initHP" type="number" min="0" value="" />
+            </label>
+            <div class="init-add-buttons">
+              <button id="initAdd" type="button">Add</button>
+              <button id="initClear" type="button" class="ghost">Clear</button>
+            </div>
+          </div>
             </div>
             <ul id="initList" class="init-list" aria-live="polite"></ul>
           </section>
@@ -117,7 +113,8 @@
       </div>
     </div>
 
-    <script src="/monster-manual/monsters.js" defer></script>
+    <script src="/vendor/xlsx/xlsx.full.min.js" defer></script>
+    <script src="/monstermanual/monstermanual-loader.js" defer></script>
     <script src="/app.js" defer></script>
     <script src="/dice-roller.js" defer></script>
   </body>
