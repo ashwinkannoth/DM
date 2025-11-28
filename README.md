@@ -27,6 +27,11 @@ API ping:
 curl http://localhost:3000/tracks
 ```
 
+## Monster manual + initiative
+- Excel-powered monster manual (`public/monstermanual/MM.xlsx`) is read in-browser (no CDN) via `monstermanual-loader.js`.
+- Visit `http://localhost:3000/monstermanual/monstermanual.html` for a sortable/searchable table.
+- Initiative tracker lets you pick Hero or Monster; monsters auto-fill AC/HP from the sheet (AC locks, HP stays editable), heroes are manual. Drag rows to reorder; “Clear” removes monsters only.
+
 ## Dice panel
 - Roll D4–D100 instantly; a glowing card simulates the dice burst while the result text updates.
 - Everything runs locally—no external assets or libraries are required.

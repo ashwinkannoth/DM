@@ -297,6 +297,25 @@ h1{
   gap:0.8rem;
   align-items:flex-end;
 }
+.init-type-toggle{
+  display:flex;
+  align-items:center;
+  gap:0.6rem;
+  padding:0.35rem 0.6rem;
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:12px;
+  background: rgba(255,255,255,0.02);
+}
+.init-type-toggle label{
+  display:inline-flex;
+  align-items:center;
+  gap:0.35rem;
+  font-weight:700;
+  color:var(--text);
+  margin:0;
+  padding:0.2rem 0.35rem;
+}
+.init-type-toggle input{ accent-color: var(--accent); }
 .init-label{
   display:flex;
   flex-direction:column;
